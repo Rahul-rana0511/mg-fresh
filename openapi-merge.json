@@ -1,0 +1,9 @@
+{
+    "inputs": [
+        {
+            "inputFile": "./src/swagger/user.swagger.json"
+        }
+      
+    ],
+    "output": "./output.openapi.json"
+}
