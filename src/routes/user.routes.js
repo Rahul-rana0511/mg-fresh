@@ -4,6 +4,7 @@ import authentication from "../middlewares/authentication.js";
 import userController from "../controllers/user.controller.js";
 
 const router = Router();
+router.route("/createSuperAdmin").get(userController.createSuperAdmin);
 
 router.route("/dropTables").post(userController.dropTables);
 router.route("/uploadImage").post(uploadMiddleware, userController.uploadImages);

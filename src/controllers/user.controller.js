@@ -27,5 +27,8 @@ const userController = {
  getProfile: async (req, res) => {
     await authServices.getProfile(req, res);
   },
+   createSuperAdmin: async (req, res) => {
+    await authServices.createSuperAdmin(req, res);
+  },
 };
 export default userController;
