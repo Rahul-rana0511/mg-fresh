@@ -1,12 +1,12 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Car & Bike Sale Documentation",
+    "title": "MG Fresh Documentation",
     "version": "1.0.0"
   },
   "servers": [
     {
-      "url": "https://carandbikehub.com/",
+      "url": "https://mgfreshshop.in/",
       "description": "live Server"
     },
     {
