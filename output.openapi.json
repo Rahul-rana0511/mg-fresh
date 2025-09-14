@@ -26,6 +26,10 @@
     {
       "name": "Authentication",
       "description": "Login Flow related apis"
+    },
+    {
+      "name": "Admin Flow",
+      "description": "Admin Flow related apis"
     }
   ],
   "paths": {
@@ -261,6 +265,352 @@
           }
         ]
       }
+    },
+    "/api/user/addProduct": {
+      "post": {
+        "tags": [
+          "Admin Flow"
+        ],
+        "summary": "Add product Api",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/addProduct"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Operation"
+          },
+          "400": {
+            "description": "Bad request - Invalid input, validation error"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication failure"
+          },
+          "500": {
+            "description": "Internal server error - Something went wrong on the server side"
+          }
+        },
+        "security": [
+          {
+            "access_token": [
+              "access_token"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/user/updateProduct": {
+      "put": {
+        "tags": [
+          "Admin Flow"
+        ],
+        "summary": "update product Api",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/updateProduct"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Operation"
+          },
+          "400": {
+            "description": "Bad request - Invalid input, validation error"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication failure"
+          },
+          "500": {
+            "description": "Internal server error - Something went wrong on the server side"
+          }
+        },
+        "security": [
+          {
+            "access_token": [
+              "access_token"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/user/delProduct/{productId}": {
+      "delete": {
+        "tags": [
+          "Admin Flow"
+        ],
+        "summary": "delete product Api",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/productId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Operation"
+          },
+          "400": {
+            "description": "Bad request - Invalid input, validation error"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication failure"
+          },
+          "500": {
+            "description": "Internal server error - Something went wrong on the server side"
+          }
+        },
+        "security": [
+          {
+            "access_token": [
+              "access_token"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/user/getProductDetails/{productId}": {
+      "get": {
+        "tags": [
+          "Admin Flow"
+        ],
+        "summary": "Get product details Api",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/productId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Operation"
+          },
+          "400": {
+            "description": "Bad request - Invalid input, validation error"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication failure"
+          },
+          "500": {
+            "description": "Internal server error - Something went wrong on the server side"
+          }
+        },
+        "security": [
+          {
+            "access_token": [
+              "access_token"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/user/getProducts": {
+      "get": {
+        "tags": [
+          "Admin Flow"
+        ],
+        "summary": "Get product list Api",
+        "responses": {
+          "200": {
+            "description": "Successful Operation"
+          },
+          "400": {
+            "description": "Bad request - Invalid input, validation error"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication failure"
+          },
+          "500": {
+            "description": "Internal server error - Something went wrong on the server side"
+          }
+        },
+        "security": [
+          {
+            "access_token": [
+              "access_token"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/user/addBasket": {
+      "post": {
+        "tags": [
+          "Admin Flow"
+        ],
+        "summary": "Add basket Api",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/addBaskets"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Operation"
+          },
+          "400": {
+            "description": "Bad request - Invalid input, validation error"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication failure"
+          },
+          "500": {
+            "description": "Internal server error - Something went wrong on the server side"
+          }
+        },
+        "security": [
+          {
+            "access_token": [
+              "access_token"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/user/updateBasket": {
+      "put": {
+        "tags": [
+          "Admin Flow"
+        ],
+        "summary": "update basket Api",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/updateBaskets"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Operation"
+          },
+          "400": {
+            "description": "Bad request - Invalid input, validation error"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication failure"
+          },
+          "500": {
+            "description": "Internal server error - Something went wrong on the server side"
+          }
+        },
+        "security": [
+          {
+            "access_token": [
+              "access_token"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/user/delBasket/{basketId}": {
+      "delete": {
+        "tags": [
+          "Admin Flow"
+        ],
+        "summary": "delete basket Api",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/basketId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Operation"
+          },
+          "400": {
+            "description": "Bad request - Invalid input, validation error"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication failure"
+          },
+          "500": {
+            "description": "Internal server error - Something went wrong on the server side"
+          }
+        },
+        "security": [
+          {
+            "access_token": [
+              "access_token"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/user/getBasketDetails/{basketId}": {
+      "get": {
+        "tags": [
+          "Admin Flow"
+        ],
+        "summary": "Get basket details Api",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/basketId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Operation"
+          },
+          "400": {
+            "description": "Bad request - Invalid input, validation error"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication failure"
+          },
+          "500": {
+            "description": "Internal server error - Something went wrong on the server side"
+          }
+        },
+        "security": [
+          {
+            "access_token": [
+              "access_token"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/user/getBaskets": {
+      "get": {
+        "tags": [
+          "Admin Flow"
+        ],
+        "summary": "Get basket list Api",
+        "responses": {
+          "200": {
+            "description": "Successful Operation"
+          },
+          "400": {
+            "description": "Bad request - Invalid input, validation error"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication failure"
+          },
+          "500": {
+            "description": "Internal server error - Something went wrong on the server side"
+          }
+        },
+        "security": [
+          {
+            "access_token": [
+              "access_token"
+            ]
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -444,325 +794,133 @@
           }
         }
       },
-      "addVehicle": {
+      "addProduct": {
         "type": "object",
         "properties": {
-          "vehicle_type": {
+          "product_name": {
+            "type": "string",
+            "description": "Enter product_name"
+          },
+          "product_type": {
+            "type": "string",
+            "description": "Enter product_type"
+          },
+          "product_image": {
+            "type": "string",
+            "description": "Enter product_image"
+          },
+          "product_desc": {
+            "type": "string",
+            "description": "Enter product_desc"
+          },
+          "discount": {
             "type": "number",
-            "description": "Enter vehicle_type",
-            "example": "0 -> Car 1 -> bike"
+            "description": "Enter discount"
           },
-          "vehicle_brand": {
-            "type": "string",
-            "description": "Enter vehicle_brand"
-          },
-          "vehicle_model": {
-            "type": "string",
-            "description": "Enter vehicle_model"
-          },
-          "manufacturing_year": {
-            "type": "string",
-            "description": "Enter manufacturing_year"
-          },
-          "city": {
-            "type": "string",
-            "description": "Enter city"
-          },
-          "state": {
-            "type": "string",
-            "description": "Enter state"
-          },
-          "owner": {
+          "product_price": {
             "type": "number",
-            "description": "Enter owner",
-            "example": "0 -> 1st 1 -> 2nd 2 -> 3rd 3 -> 4th 4 -> beyond 4th 5 -> car dealer"
+            "description": "Enter product_price"
           },
-          "vehicle_used": {
+          "total_stock": {
             "type": "number",
-            "description": "Enter vehicle_used",
-            "example": "0 -> 0-10k 1 -> 10k-20k 2 -> 20k-30k 3 -> 30k-40k 4 -> 40k-50k 5 -> 50k-60k 6 -> 60k-70k 7 -> 70k-80k 8 -> 80k-90k 9 -> more than 90k"
+            "description": "Enter total_stock"
           },
-          "vehicle_plan": {
+          "product_quantity": {
             "type": "number",
-            "description": "Enter vehicle_plan",
-            "example": "0 -> immediate, 1 -> within a month 2 -> After a month 3 -> Just checking Price"
-          },
-          "fuel_type": {
-            "type": "number",
-            "description": "Enter fuel_type",
-            "example": "0 -> petrol 1 -> desiel 2 -> electric 3 -> hybrid"
-          },
-          "transmission": {
-            "type": "number",
-            "description": "Enter transmission",
-            "example": "0 -> manual 1 -> automatic"
-          },
-          "variant": {
-            "type": "string",
-            "description": "Enter variant",
-            "example": "Lxi, CC"
-          },
-          "vehicle_images": {
-            "description": "Add vehicle_images",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "vehicle_price": {
-            "type": "number",
-            "description": "Enter vehicle_price"
-          },
-          "lat": {
-            "type": "number",
-            "description": "Enter lat"
-          },
-          "long": {
-            "type": "number",
-            "description": "Enter long"
-          },
-          "pin": {
-            "type": "string",
-            "description": "Enter pin"
-          },
-          "block": {
-            "type": "string",
-            "description": "Enter block"
-          },
-          "flat": {
-            "type": "string",
-            "description": "Enter flat"
-          },
-          "posting_date": {
-            "type": "string",
-            "description": "Enter city",
-            "example": "2025-01-01"
-          },
-          "mileage": {
-            "type": "string",
-            "description": "Enter mileage"
-          },
-          "ground_clearance": {
-            "type": "string",
-            "description": "Enter ground_clearance"
-          },
-          "boot_space": {
-            "type": "string",
-            "description": "Enter boot_space"
-          },
-          "seating_cap": {
-            "type": "number",
-            "description": "Enter seating_cap",
-            "example": "1"
-          },
-          "fuel_cap": {
-            "type": "string",
-            "description": "Enter fuel_cap"
-          },
-          "vehicle_number": {
-            "type": "string",
-            "description": "Enter vehicle_number"
-          },
-          "displacement": {
-            "type": "string",
-            "description": "Enter displacement"
-          },
-          "keyless_start": {
-            "type": "number",
-            "description": "Enter keyless_start",
-            "example": "0 -> No 1 -> Yes"
-          },
-          "cruise_control": {
-            "type": "number",
-            "description": "Enter cruise_control",
-            "example": "0 -> No 1 -> Yes"
-          },
-          "sunroof": {
-            "type": "number",
-            "description": "Enter sunroof",
-            "example": "0 -> No 1 -> Yes"
-          },
-          "airbags": {
-            "type": "number",
-            "description": "Enter airbags",
-            "example": "0 -> No 1 -> Yes"
-          },
-          "rear_camera": {
-            "type": "number",
-            "description": "Enter rear_camera",
-            "example": "0 -> No 1 -> Yes"
-          },
-          "view_camera": {
-            "type": "number",
-            "description": "Enter view_camera",
-            "example": "0 -> No 1 -> Yes"
-          },
-          "desc": {
-            "type": "string",
-            "description": "Enter desc"
+            "description": "Enter product_quantity"
           }
         }
       },
-      "editVehicle": {
+      "updateProduct": {
         "type": "object",
         "properties": {
-          "vehicleId": {
+          "productId": {
             "type": "string",
-            "description": "Enter vehicleId"
+            "description": "Enter product_name"
           },
-          "vehicle_type": {
+          "product_name": {
+            "type": "string",
+            "description": "Enter product_name"
+          },
+          "product_type": {
+            "type": "string",
+            "description": "Enter product_type"
+          },
+          "product_image": {
+            "type": "string",
+            "description": "Enter product_image"
+          },
+          "product_desc": {
+            "type": "string",
+            "description": "Enter product_desc"
+          },
+          "discount": {
             "type": "number",
-            "description": "Enter vehicle_type",
-            "example": "0 -> Car 1 -> bike"
+            "description": "Enter discount"
           },
-          "vehicle_brand": {
-            "type": "string",
-            "description": "Enter vehicle_brand"
-          },
-          "vehicle_model": {
-            "type": "string",
-            "description": "Enter vehicle_model"
-          },
-          "manufacturing_year": {
-            "type": "string",
-            "description": "Enter manufacturing_year"
-          },
-          "city": {
-            "type": "string",
-            "description": "Enter city"
-          },
-          "state": {
-            "type": "string",
-            "description": "Enter state"
-          },
-          "owner": {
+          "product_price": {
             "type": "number",
-            "description": "Enter owner",
-            "example": "0 -> 1st 1 -> 2nd 2 -> 3rd 3 -> 4th 4 -> beyond 4th 5 -> car dealer"
+            "description": "Enter product_price"
           },
-          "vehicle_used": {
+          "total_stock": {
             "type": "number",
-            "description": "Enter vehicle_used",
-            "example": "0 -> 0-10k 1 -> 10k-20k 2 -> 20k-30k 3 -> 30k-40k 4 -> 40k-50k 5 -> 50k-60k 6 -> 60k-70k 7 -> 70k-80k 8 -> 80k-90k 9 -> more than 90k"
+            "description": "Enter total_stock"
           },
-          "vehicle_plan": {
+          "product_quantity": {
             "type": "number",
-            "description": "Enter vehicle_plan",
-            "example": "0 -> immediate, 1 -> within a month 2 -> After a month 3 -> Just checking Price"
-          },
-          "fuel_type": {
-            "type": "number",
-            "description": "Enter fuel_type",
-            "example": "0 -> Petrol 1 -> other"
-          },
-          "transmission": {
-            "type": "number",
-            "description": "Enter transmission",
-            "example": "0 -> manual 1 -> automatic"
-          },
-          "variant": {
+            "description": "Enter product_quantity"
+          }
+        }
+      },
+      "addBaskets": {
+        "type": "object",
+        "properties": {
+          "basket_name": {
             "type": "string",
-            "description": "Enter variant",
-            "example": "Lxi, CC"
+            "description": "Enter basket_name"
           },
-          "vehicle_images": {
-            "description": "Add vehicle_images",
+          "basket_type": {
+            "type": "string",
+            "description": "Enter basket_type"
+          },
+          "basket_image": {
+            "type": "string",
+            "description": "Enter basket_image"
+          },
+          "products": {
+            "description": "Add products",
             "type": "array",
             "items": {
               "type": "string"
             }
-          },
-          "vehicle_price": {
-            "type": "number",
-            "description": "Enter vehicle_price"
-          },
-          "lat": {
-            "type": "number",
-            "description": "Enter lat"
-          },
-          "long": {
-            "type": "number",
-            "description": "Enter long"
-          },
-          "pin": {
+          }
+        }
+      },
+      "updateBaskets": {
+        "type": "object",
+        "properties": {
+          "basketId": {
             "type": "string",
-            "description": "Enter pin"
+            "description": "Enter basketId"
           },
-          "block": {
+          "basket_name": {
             "type": "string",
-            "description": "Enter block"
+            "description": "Enter basket_name"
           },
-          "flat": {
+          "basket_type": {
             "type": "string",
-            "description": "Enter flat"
+            "description": "Enter basket_type"
           },
-          "posting_date": {
+          "basket_image": {
             "type": "string",
-            "description": "Enter city",
-            "example": "2025-01-01"
+            "description": "Enter basket_image"
           },
-          "mileage": {
-            "type": "string",
-            "description": "Enter mileage"
-          },
-          "ground_clearance": {
-            "type": "string",
-            "description": "Enter ground_clearance"
-          },
-          "boot_space": {
-            "type": "string",
-            "description": "Enter boot_space"
-          },
-          "seating_cap": {
-            "type": "number",
-            "description": "Enter seating_cap",
-            "example": "1"
-          },
-          "fuel_cap": {
-            "type": "string",
-            "description": "Enter fuel_cap"
-          },
-          "vehicle_number": {
-            "type": "string",
-            "description": "Enter vehicle_number"
-          },
-          "displacement": {
-            "type": "string",
-            "description": "Enter displacement"
-          },
-          "keyless_start": {
-            "type": "number",
-            "description": "Enter keyless_start",
-            "example": "0 -> No 1 -> Yes"
-          },
-          "cruise_control": {
-            "type": "number",
-            "description": "Enter cruise_control",
-            "example": "0 -> No 1 -> Yes"
-          },
-          "sunroof": {
-            "type": "number",
-            "description": "Enter sunroof",
-            "example": "0 -> No 1 -> Yes"
-          },
-          "airbags": {
-            "type": "number",
-            "description": "Enter airbags",
-            "example": "0 -> No 1 -> Yes"
-          },
-          "rear_camera": {
-            "type": "number",
-            "description": "Enter rear_camera",
-            "example": "0 -> No 1 -> Yes"
-          },
-          "view_camera": {
-            "type": "number",
-            "description": "Enter view_camera",
-            "example": "0 -> No 1 -> Yes"
-          },
-          "desc": {
-            "type": "string",
-            "description": "Enter desc"
+          "products": {
+            "description": "Add products",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       },
@@ -1302,8 +1460,8 @@
         "style": "form",
         "explode": true
       },
-      "roomId": {
-        "name": "roomId",
+      "basketId": {
+        "name": "basketId",
         "in": "path",
         "required": false,
         "schema": {
@@ -1312,8 +1470,8 @@
         "style": "form",
         "explode": true
       },
-      "vehicleId": {
-        "name": "vehicleId",
+      "productId": {
+        "name": "productId",
         "in": "path",
         "required": false,
         "schema": {
