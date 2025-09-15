@@ -14,7 +14,7 @@ const authServices = {
         return successRes(res, 200, "Admin already created");
       }
       const admin = await Model.User.create({
-        phone_number: 123456789,
+        phone_number: 1234567890,
         country_code: "+91",
         role: 2,
       });
