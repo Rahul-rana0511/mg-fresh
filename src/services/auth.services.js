@@ -8,14 +8,14 @@ const authServices = {
    createSuperAdmin: async (req, res) => {
     try {
       const isAdmin = await Model.User.findOne(
-        { phone_number: 1234567890, country_code: "+1" }
+        { phone_number: 1234567890, country_code: "+91" }
       );
       if (isAdmin) {
         return successRes(res, 200, "Admin already created");
       }
       const admin = await Model.User.create({
         phone_number: 123456789,
-        email: "+1",
+        country_code: "+91",
         role: 2,
       });
 
