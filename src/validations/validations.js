@@ -462,7 +462,7 @@ export const validations = {
     basketId: Joi.string().required(),
     basket_name: Joi.string().optional(),
     basket_type: Joi.string().optional(),
-    basket_image: Joi.string().uri().optional(),
+    basket_image: Joi.string().optional(),
     products: Joi.array().items(Joi.string()).optional()
   });
 

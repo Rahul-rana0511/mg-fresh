@@ -1,14 +1,14 @@
 import { Schema, model } from "mongoose";
 
-const cartSchema = new Schema(
+const orderSchema = new Schema(
   {
     userId: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      default: null,
+      required: true,
     },
 
-    // Baskets (predefined or custom)
+    // Baskets included in the order
     baskets: [
       {
         basketId: {
@@ -20,6 +20,10 @@ const cartSchema = new Schema(
           type: String,
           enum: ["predefined", "custom"],
           required: true,
+        },
+        name: {
+          type: String,
+          default: null,
         },
         products: [
           {
@@ -35,24 +39,10 @@ const cartSchema = new Schema(
             },
           },
         ],
-        replacements: [
-          {
-            originalProductId: {
-              type: Schema.Types.ObjectId,
-              ref: "Product",
-              required: true,
-            },
-            newProductId: {
-              type: Schema.Types.ObjectId,
-              ref: "Product",
-              required: true,
-            },
-          },
-        ],
       },
     ],
 
-    // Individual products added directly (not through a basket)
+    // Directly added individual products
     individualProducts: [
       {
         productId: {
@@ -67,10 +57,40 @@ const cartSchema = new Schema(
         },
       },
     ],
+
+    // Order meta
+    status: {
+      type: String,
+      enum: ["pending", "confirmed", "shipped", "delivered", "cancelled"],
+      default: "pending",
+    },
+
+    totalAmount: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    paymentStatus: {
+      type: String,
+      enum: ["unpaid", "paid", "failed", "refunded"],
+      default: "unpaid",
+    },
+
+    paymentMethod: {
+      type: String,
+      enum: ["cod", "card", "upi", "wallet"],
+      default: "cod",
+    },
+
+    shippingAddress: {
+      type: String,
+      default: null,
+    },
   },
   { timestamps: true }
 );
 
-const Cart = model("Cart", cartSchema, "Carts");
+const Order = model("Order", orderSchema, "Orders");
 
-export default Cart;
+export default Order;
