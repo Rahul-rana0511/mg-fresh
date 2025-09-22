@@ -18,7 +18,7 @@ router.route("/deleteAccount").delete(userController.deleteAccount);
 router.route("/logout").patch(userController.logout);
 //--Setting
 router.route("/getProfile").get(userController.getProfile);
-// router.route("/updateProfile").put(userController.updateProfile);
+router.route("/createProfile").put(validations.validateCreateProfile, userController.createProfile);
 
 //--Admin Flow Apis--
 router.route("/addProduct").post(validations.validateAddProduct,userController.addProduct);
@@ -32,5 +32,13 @@ router.route("/delBasket/:basketId").delete(userController.delBasket);
 router.route("/getBaskets").get(userController.getBaskets);
 router.route("/getBasketDetails/:basketId").get(userController.getBasketDetails);
 router.route("/updateBasket").put(validations.validateUpdateBaskets, userController.updateBasket);
+
+//Add Address flow
+router.route("/createAddress").post(validations.validateCreateAddress, userController.createAddress);
+router.route("/getAddresses").get(userController.getAddresses);
+router.route("/getAddressById/:addressId").get(userController.getAddressById);
+router.route("/delAddress/:addressId").delete(userController.delAddress);
+router.route("/updateAddress/:addressId").put(validations.validateUpdateAddress, userController.updateAddress);
+
 
 export default router;

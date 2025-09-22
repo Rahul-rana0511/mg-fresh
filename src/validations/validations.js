@@ -529,7 +529,58 @@ validateAddProduct: (req, res, next) => {
   }
 
   next();
-}
+},
+ validateCreateProfile : (req, res, next) => {
+  const schema = Joi.object({
+    profile_image: Joi.string().optional(),
+    first_name: Joi.string().required(),
+    last_name: Joi.string().required(),
+    gender: Joi.number().valid(0, 1, 2).optional() 
+  });
 
+  const { error } = schema.validate(req.body);
+  if (error) {
+    return handleValidationError(res, error);
+  }
+
+  next();
+},
+validateCreateAddress : (req, res, next) => {
+  const schema = Joi.object({
+   delivery_details: Joi.string().allow(null, "").optional(),
+    address_details: Joi.string().allow(null, "").optional(),
+    name: Joi.string().optional(),
+    country_code: Joi.string().optional(),
+    phone_number: Joi.number().optional(),
+    address_type: Joi.number().valid(0, 1, 2).optional(),
+    lat: Joi.number().optional(),
+    long: Joi.number().optional(),
+  });
+
+  const { error } = schema.validate(req.body);
+  if (error) {
+    return handleValidationError(res, error);
+  }
+  next();
+},
+
+validateUpdateAddress : (req, res, next) => {
+  const schema = Joi.object({
+    delivery_details: Joi.string().allow(null, "").optional(),
+    address_details: Joi.string().allow(null, "").optional(),
+    name: Joi.string().optional(),
+    country_code: Joi.string().optional(),
+    phone_number: Joi.number().optional(),
+    address_type: Joi.number().valid(0, 1, 2).optional(),
+    lat: Joi.number().optional(),
+    long: Joi.number().optional(),
+  });
+
+  const { error } = schema.validate(req.body);
+  if (error) {
+   return handleValidationError(res, error);
+  }
+  next();
+}
 
 };

@@ -1,5 +1,6 @@
 import authServices from "../services/auth.services.js";
 import adminServices from "../services/admin.services.js";
+import userServices from "../services/user.services.js";
 const userController = {
   dropTables: async (req, res) => {
     await authServices.dropTables(req, res);
@@ -10,6 +11,9 @@ const userController = {
 
   login: async (req, res) => {
     await authServices.login(req, res);
+  },
+createProfile: async (req, res) => {
+    await authServices.createProfile(req, res);
   },
 
   logout: async (req, res) => {
@@ -60,6 +64,21 @@ const userController = {
   },
   getBasketDetails: async (req, res) => {
     await adminServices.getBasketDetails(req, res);
+  },
+    createAddress: async (req, res) => {
+    await userServices.createAddress(req, res);
+  },
+   getAddresses: async (req, res) => {
+    await userServices.getAddresses(req, res);
+  },
+   getAddressById: async (req, res) => {
+    await userServices.getAddressById(req, res);
+  },
+   updateAddress: async (req, res) => {
+    await userServices.updateAddress(req, res);
+  },
+   delAddress: async (req, res) => {
+    await userServices.delAddress(req, res);
   },
 };
 export default userController;

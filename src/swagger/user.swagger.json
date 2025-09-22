@@ -28,6 +28,10 @@
         "description": "Login Flow related apis"
       },
       {
+        "name": "Address",
+        "description": "Address Flow related apis"
+      },
+      {
         "name": "Admin Flow",
         "description": "Admin Flow related apis"
       }
@@ -245,6 +249,44 @@
             "Setting"
           ],
           "summary": "logout Account Api",
+          "responses": {
+            "200": {
+              "description": "Successful Operation"
+            },
+            "400": {
+              "description": "Bad request - Invalid input, validation error"
+            },
+            "401": {
+              "description": "Unauthorized - Authentication failure"
+            },
+            "500": {
+              "description": "Internal server error - Something went wrong on the server side"
+            }
+          },
+          "security": [
+            {
+              "access_token": [
+                "access_token"
+              ]
+            }
+          ]
+        }
+      },
+      "/api/user/createProfile": {
+        "put": {
+          "tags": [
+            "Authentication"
+          ],
+          "summary": "Create & update profile Api",
+           "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/createProfile"
+                }
+              }
+            }
+          },
           "responses": {
             "200": {
               "description": "Successful Operation"
@@ -597,6 +639,172 @@
             }
           ]
         }
+      },
+         "/api/user/createAddress": {
+        "post": {
+          "tags": [
+            "Address"
+          ],
+          "summary": "Add address Api",
+           "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/createAddress"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successful Operation"
+            },
+            "400": {
+              "description": "Bad request - Invalid input, validation error"
+            },
+            "401": {
+              "description": "Unauthorized - Authentication failure"
+            },
+            "500": {
+              "description": "Internal server error - Something went wrong on the server side"
+            }
+          },
+          "security": [
+            {
+              "access_token": [
+                "access_token"
+              ]
+            }
+          ]
+        }
+      },
+       "/api/user/delAddress/{addressId}": {
+        "delete": {
+          "tags": [
+            "Address"
+          ],
+          "summary": "delete address Api",
+             "parameters": [{ "$ref": "#/components/parameters/addressId" }],
+          "responses": {
+            "200": {
+              "description": "Successful Operation"
+            },
+            "400": {
+              "description": "Bad request - Invalid input, validation error"
+            },
+            "401": {
+              "description": "Unauthorized - Authentication failure"
+            },
+            "500": {
+              "description": "Internal server error - Something went wrong on the server side"
+            }
+          },
+          "security": [
+            {
+              "access_token": [
+                "access_token"
+              ]
+            }
+          ]
+        }
+      },
+       "/api/user/getAddresses": {
+        "get": {
+          "tags": [
+            "Address"
+          ],
+          "summary": "Get address list Api",
+          "responses": {
+            "200": {
+              "description": "Successful Operation"
+            },
+            "400": {
+              "description": "Bad request - Invalid input, validation error"
+            },
+            "401": {
+              "description": "Unauthorized - Authentication failure"
+            },
+            "500": {
+              "description": "Internal server error - Something went wrong on the server side"
+            }
+          },
+          "security": [
+            {
+              "access_token": [
+                "access_token"
+              ]
+            }
+          ]
+        }
+      },
+       "/api/user/getAddressById/{addressId}": {
+        "get": {
+          "tags": [
+            "Address"
+          ],
+          "summary": "Get address details Api",
+             "parameters": [{ "$ref": "#/components/parameters/addressId" }],
+          "responses": {
+            "200": {
+              "description": "Successful Operation"
+            },
+            "400": {
+              "description": "Bad request - Invalid input, validation error"
+            },
+            "401": {
+              "description": "Unauthorized - Authentication failure"
+            },
+            "500": {
+              "description": "Internal server error - Something went wrong on the server side"
+            }
+          },
+          "security": [
+            {
+              "access_token": [
+                "access_token"
+              ]
+            }
+          ]
+        }
+      },
+      "/api/user/updateAddress/{addressId}": {
+        "put": {
+          "tags": [
+            "Address"
+          ],
+          "summary": "update address Api",
+           "parameters": [{ "$ref": "#/components/parameters/addressId" }],
+           "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/createAddress"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successful Operation"
+            },
+            "400": {
+              "description": "Bad request - Invalid input, validation error"
+            },
+            "401": {
+              "description": "Unauthorized - Authentication failure"
+            },
+            "500": {
+              "description": "Internal server error - Something went wrong on the server side"
+            }
+          },
+          "security": [
+            {
+              "access_token": [
+                "access_token"
+              ]
+            }
+          ]
+        }
       }
     },
     "components": {
@@ -910,6 +1118,44 @@
             }
           }
         },
+        "createAddress": {
+  "type": "object",
+  "properties": {
+    "delivery_details": {
+      "type": "string",
+      "description": "Enter delivery details"
+    },
+    "address_details": {
+      "type": "string",
+      "description": "Enter address details"
+    },
+    "name": {
+      "type": "string",
+      "description": "Enter name"
+    },
+    "country_code": {
+      "type": "string",
+      "description": "Enter country code"
+    },
+    "phone_number": {
+      "type": "number",
+      "description": "Enter phone number"
+    },
+    "address_type": {
+      "type": "number",
+      "description": "Address type (0, 1, 2)",
+      "enum": [0, 1, 2]
+    },
+    "lat": {
+      "type": "number",
+      "description": "Latitude"
+    },
+    "long": {
+      "type": "number",
+      "description": "Longitude"
+    }
+  }
+},
         "dummyPayment": {
           "type": "object",
           "properties": {
@@ -1238,45 +1484,18 @@
               "description": "Upload profile image",
               "type": "string"
             },
-            "full_name": {
+            "first_name": {
               "type": "string",
-              "description": "Enter full name"
+              "description": "Enter first name"
             },
-            "email": {
-              "description": "enter email",
+            "last_name": {
+              "description": "Enter last name",
               "type": "string"
             },
-            "specialization": {
-              "description": "Add Specialization",
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "available_days": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "day": {
-                    "type": "number"
-                  },
-                  "opening_time": {
-                    "type": "string"
-                  },
-                  "closing_time":{
-                    "type":"string"
-                  }
-                }
-              }
-            },
-            "country_code": {
-              "description": "enter country code",
-              "type": "string"
-            },
-            "phone_number": {
+            "gender": {
+              "description": "enter gender",
               "type": "number",
-              "description": "add phone number"
+              "example":"0 -> Men 1 -> Women 2 -> prefer not to say"
             }
           }
         },
@@ -1448,6 +1667,16 @@
         },
         "basketId": {
           "name": "basketId",
+          "in": "path",
+          "required": false,
+          "schema": {
+            "type": "string"
+          },
+          "style": "form",
+          "explode": true
+        },
+         "addressId": {
+          "name": "addressId",
           "in": "path",
           "required": false,
           "schema": {
