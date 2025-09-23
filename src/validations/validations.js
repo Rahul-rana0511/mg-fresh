@@ -463,6 +463,8 @@ export const validations = {
     basket_name: Joi.string().optional(),
     basket_type: Joi.string().optional(),
     basket_image: Joi.string().optional(),
+      box_type: Joi.number().optional(),
+    mandatory_products: Joi.number().optional(),
     products: Joi.array().items(Joi.string()).optional()
   });
 
@@ -478,6 +480,8 @@ validateAddBaskets: (req, res, next) => {
   const schema = Joi.object({
     basket_name: Joi.string().optional(),
     basket_type: Joi.string().optional(),
+    box_type: Joi.number().optional(),
+    mandatory_products: Joi.number().optional(),
     basket_image: Joi.string().optional(),
     products: Joi.array().items(Joi.string()).optional()
   });

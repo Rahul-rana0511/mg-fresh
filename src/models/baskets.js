@@ -9,6 +9,15 @@ const basketSchema = new Schema(
         type: String,
         default: null
       },
+      box_type: {
+        type: Number,
+        default: null,
+        description: "0 -> Custom 1 -> Goodness"
+      },
+      mandatory_products:{
+        type: Number,
+        default: 0
+      },
     basket_image: {
       type: String,
       default: null

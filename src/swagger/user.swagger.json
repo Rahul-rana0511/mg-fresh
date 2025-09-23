@@ -1081,6 +1081,15 @@
               "type": "string",
               "description": "Enter basket_image"
             },
+            "box_type": {
+              "type": "number",
+              "description": "Enter box_type",
+              "example":"0 -> Custom 1 -> Goodness"
+            },
+            "mandatory_products": {
+              "type": "number",
+              "description": "Enter mandatory_products"
+            },
             "products": {
               "description": "Add products",
               "type": "array",
@@ -1108,6 +1117,15 @@
             "basket_image": {
               "type": "string",
               "description": "Enter basket_image"
+            },
+              "box_type": {
+              "type": "number",
+              "description": "Enter box_type",
+              "example":"0 -> Custom 1 -> Goodness"
+            },
+            "mandatory_products": {
+              "type": "number",
+              "description": "Enter mandatory_products"
             },
             "products": {
               "description": "Add products",
