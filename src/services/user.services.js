@@ -192,7 +192,7 @@ const userServices = {
       .populate("individualProducts.productId");
  
     if (!cart) {
-      return res.status(404).json({ message: "Cart not found." });
+      return errorRes(res, 404, "Cart not found")
     }
  
     const unavailableItems = [];
@@ -241,18 +241,15 @@ const userServices = {
     }
  
     if (unavailableItems.length > 0) {
-      return res.status(409).json({
-        message: "Some items are not available for purchase.",
-        unavailableItems,
-      });
+      return errorRes(res, 400, "Some items are not available for purchase", unavailableItems)
     }
  
     // All products are available
-    return res.status(200).json({ message: "All items are available. Proceed to checkout." });
- 
+    return successRes(res, 200, "All items are available. Proceed to checkout")
+    
   } catch (error) {
     console.error("Buy Now Error:", error);
-    return res.status(500).json({ message: "Internal server error." });
+    return errorRes(res, 500, error.message);
   }
 },
  createPaymentIntent : async (req, res) => {
@@ -264,7 +261,7 @@ const userServices = {
       .populate("individualProducts.productId");
  
     if (!cart) {
-      return res.status(404).json({ message: "Cart not found" });
+      return errorRes(res, 404, "Cart not found");
     }
  
     // Calculate total amount
@@ -287,16 +284,16 @@ const userServices = {
       currency: "INR",
       receipt: `rcpt_${Date.now()}`,
     });
- 
-    res.status(200).json({
-      razorpayOrderId: razorpayOrder.id,
+     let data = {
+  razorpayOrderId: razorpayOrder.id,
       amount: totalAmount,
       currency: "INR",
       key: process.env.RAZORPAY_KEY_ID,
-    });
+     }
+     return successRes(res, 200, "Create payment intent", data)
   } catch (error) {
     console.error("Create Razorpay Order Failed:", error);
-    res.status(500).json({ message: "Failed to create Razorpay order" });
+    return errorRes(res, 500, error.message)
   }
 },
  verifyPayment : async (req, res) => {
@@ -321,29 +318,29 @@ const userServices = {
     }
  
     // 2. Get user's cart
-    const cart = await Cart.findOne({ userId });
+    const cart = await Model.Cart.findOne({ userId });
  
     if (!cart || (!cart.individualProducts.length && !cart.baskets.length)) {
-      return res.status(400).json({ message: "Cart is empty or invalid" });
+      return errorRes(res, 400, "Cart is empty or invalid")
     }
  
     // 3. Calculate total again (double-check)
     let totalAmount = 0;
  
     for (const item of cart.individualProducts) {
-      const product = await Product.findById(item.productId);
+      const product = await Model.Product.findById(item.productId);
       totalAmount += product.price * item.quantity;
     }
  
     for (const basket of cart.baskets) {
       for (const item of basket.products) {
-        const product = await Product.findById(item.productId);
+        const product = await Model.Product.findById(item.productId);
         totalAmount += product.price * item.quantity;
       }
     }
  
     // 4. Create order in DB
-    const order = await Order.create({
+    const order = await Model.Order.create({
       userId,
       baskets: cart.baskets,
       individualProducts: cart.individualProducts,
@@ -355,14 +352,14 @@ const userServices = {
  
     // 5. Decrement product stock
     for (const item of cart.individualProducts) {
-      await Product.findByIdAndUpdate(item.productId, {
+      await Model.Product.findByIdAndUpdate(item.productId, {
         $inc: { stock: -item.quantity },
       });
     }
  
     for (const basket of cart.baskets) {
       for (const item of basket.products) {
-        await Product.findByIdAndUpdate(item.productId, {
+        await Model.Product.findByIdAndUpdate(item.productId, {
           $inc: { stock: -item.quantity },
         });
       }
@@ -372,21 +369,18 @@ const userServices = {
     cart.individualProducts = [];
     cart.baskets = [];
     await cart.save();
- 
-    res.status(200).json({
-      message: "Payment verified and order placed successfully",
-      orderId: order._id,
-    });
+    return successRes(res, 200, "Payment verified and order placed successfully",{orderId: order._id})
   } catch (error) {
     console.error("Payment Verification Failed:", error);
-    res.status(500).json({ message: "Payment verification failed" });
+    return errorRes(res, 500, error.message)
+   
   }
 },
  getCartItems : async (req, res) => {
   try {
     const userId = req.user.id;
  
-    const cart = await Cart.findOne({ userId })
+    const cart = await Model.Cart.findOne({ userId })
       .populate("baskets.products.productId")
       .populate("baskets.basketId")
       .populate("individualProducts.productId");
@@ -402,8 +396,9 @@ const userServices = {
  
     const { totalAmount, detailedItems } = await calculateCartTotal(cart);
  
-    res.status(200).json({
-      individualProducts: cart.individualProducts.map((item) => ({
+
+      let data ={
+individualProducts: cart.individualProducts.map((item) => ({
         productId: item.productId._id,
         name: item.productId.name,
         quantity: item.quantity,
@@ -424,7 +419,8 @@ const userServices = {
  
       totalAmount,
       detailedItems, // optional: for displaying itemized summary
-    });
+      }
+      return successRes(res, 200, "Cart data", data)
   } catch (err) {
     console.error("Failed to get cart items:", err);
     res.status(500).json({ message: "Internal server error" });

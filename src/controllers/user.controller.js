@@ -80,5 +80,23 @@ createProfile: async (req, res) => {
    delAddress: async (req, res) => {
     await userServices.delAddress(req, res);
   },
+  homeScreen: async (req, res) => {
+    await userServices.homeScreen(req, res);
+  },
+  buyNow: async (req, res) => {
+    await userServices.buyNow(req, res);
+  },  
+  delAddress: async (req, res) => {
+    await userServices.delAddress(req, res);
+  },
+  createPaymentIntent: async (req, res) => {
+    await userServices.createPaymentIntent(req, res);
+  },
+  verifyPayment: async (req, res) => {
+    await userServices.verifyPayment(req, res);
+  },
+  getCartItems: async (req, res) => {
+    await userServices.getCartItems(req, res);
+  },
 };
 export default userController;
