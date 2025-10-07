@@ -34,7 +34,11 @@
       {
         "name": "Admin Flow",
         "description": "Admin Flow related apis"
-      }
+      },
+       {
+      "name": "Core Functionality",
+      "description": "Core Functionality related apis"
+    }
     ],
    
     "paths":{
@@ -805,7 +809,199 @@
             }
           ]
         }
+      },
+        "/api/user/homeScreen": {
+      "get": {
+        "tags": [
+          "Core Functionality"
+        ],
+        "summary": " Get my profile Api",
+        "responses": {
+          "200": {
+            "description": "Successful Operation"
+          },
+          "400": {
+            "description": "Bad request - Invalid input, validation error"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication failure"
+          },
+          "500": {
+            "description": "Internal server error - Something went wrong on the server side"
+          }
+        },
+        "security": [
+          {
+            "access_token": [
+              "access_token"
+            ]
+          }
+        ]
       }
+    },
+    "/api/user/buyNow": {
+      "get": {
+        "tags": [
+          "Core Functionality"
+        ],
+        "summary": " Get my profile Api",
+        "responses": {
+          "200": {
+            "description": "Successful Operation"
+          },
+          "400": {
+            "description": "Bad request - Invalid input, validation error"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication failure"
+          },
+          "500": {
+            "description": "Internal server error - Something went wrong on the server side"
+          }
+        },
+        "security": [
+          {
+            "access_token": [
+              "access_token"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/user/getCartItems": {
+      "get": {
+        "tags": [
+          "Core Functionality"
+        ],
+        "summary": " Get Cart Api",
+        "responses": {
+          "200": {
+            "description": "Successful Operation"
+          },
+          "400": {
+            "description": "Bad request - Invalid input, validation error"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication failure"
+          },
+          "500": {
+            "description": "Internal server error - Something went wrong on the server side"
+          }
+        },
+        "security": [
+          {
+            "access_token": [
+              "access_token"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/user/createPaymentIntent": {
+      "post": {
+        "tags": [
+          "Core Functionality"
+        ],
+        "summary": "create Payment Intent Api",
+        "responses": {
+          "200": {
+            "description": "Successful Operation"
+          },
+          "400": {
+            "description": "Bad request - Invalid input, validation error"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication failure"
+          },
+          "500": {
+            "description": "Internal server error - Something went wrong on the server side"
+          }
+        },
+        "security": [
+          {
+            "access_token": [
+              "access_token"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/user/addInCart": {
+      "post": {
+        "tags": [
+          "Core Functionality"
+        ],
+        "summary": "Add to cart Api",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/addInCart"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Operation"
+          },
+          "400": {
+            "description": "Bad request - Invalid input, validation error"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication failure"
+          },
+          "500": {
+            "description": "Internal server error - Something went wrong on the server side"
+          }
+        },
+        "security": [
+          {
+            "access_token": [
+              "access_token"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/user/verifyPayment": {
+      "post": {
+        "tags": [
+          "Core Functionality"
+        ],
+        "summary": "Verfiy payment Api",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/verifyPayment"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Operation"
+          },
+          "400": {
+            "description": "Bad request - Invalid input, validation error"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication failure"
+          },
+          "500": {
+            "description": "Internal server error - Something went wrong on the server side"
+          }
+        },
+        "security": [
+          {
+            "access_token": [
+              "access_token"
+            ]
+          }
+        ]
+      }
+    }
     },
     "components": {
       "schemas": {
@@ -1174,41 +1370,113 @@
     }
   }
 },
-        "dummyPayment": {
-          "type": "object",
-          "properties": {
-            "vehicleId": {
-              "type": "string",
-              "description": "Enter vehicleId"
+       "addInCart": {
+        "type": "object",
+        "properties": {
+          "basketId": {
+            "type": "string",
+            "description": "Enter basketId"
+          },
+          "products": {
+            "type": "array",
+            "description": "Product replacements for predefined basket (max 3)",
+            "items": {
+              "type": "object",
+              "properties": {
+                "productId": {
+                  "type": "string",
+                  "format": "objectId",
+                  "description": "Original product ID to replace",
+                  "example": "507f1f77bcf86cd799439014"
+                },
+                "quantity": {
+                  "type": "number"
+                }
+              }
             }
-          }
-        },
-        "createPaymentIntent": {
-          "type": "object",
-          "properties": {
-            "amount": {
-              "type": "number",
-              "description": "Enter price"
+          },
+          "productId": {
+            "type": "string",
+            "description": "Enter productId"
+          },
+          "quantity": {
+            "type": "string",
+            "description": "Enter quantity"
+          },
+          "replacements": {
+            "type": "array",
+            "description": "Product replacements for predefined basket (max 3)",
+            "items": {
+              "type": "object",
+              "properties": {
+                "originalProductId": {
+                  "type": "string",
+                  "format": "objectId",
+                  "description": "Original product ID to replace",
+                  "example": "507f1f77bcf86cd799439014"
+                },
+                "newProductId": {
+                  "type": "string",
+                  "format": "objectId",
+                  "description": "New product ID to replace with",
+                  "example": "507f1f77bcf86cd799439015"
+                }
+              },
+              "required": [
+                "originalProductId",
+                "newProductId"
+              ]
             }
+          },
+          "phone_number": {
+            "type": "number",
+            "description": "Enter phone number"
           }
-        },
-         "verifyPayment": {
-          "type": "object",
-          "properties": {
-            "razorpay_order_id": {
-              "type": "string",
-              "description": "Enter razorpay_order_id"
-            },
-            "razorpay_payment_id": {
-              "type": "string",
-              "description": "Enter razorpay_payment_id"
-            },
-            "razorpay_signature": {
-              "type": "string",
-              "description": "Enter razorpay_signature"
-            }
+        }
+      },
+      "dummyPayment": {
+        "type": "object",
+        "properties": {
+          "vehicleId": {
+            "type": "string",
+            "description": "Enter vehicleId"
           }
-        },
+        }
+      },
+      "createPaymentIntent": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number",
+            "description": "Enter price"
+          }
+        }
+      },
+      "verifyPayment": {
+        "type": "object",
+        "properties": {
+          "razorpay_order_id": {
+            "type": "string",
+            "description": "Enter razorpay_order_id"
+          },
+          "razorpay_payment_id": {
+            "type": "string",
+            "description": "Enter razorpay_payment_id"
+          },
+          "razorpay_signature": {
+            "type": "string",
+            "description": "Enter razorpay_signature"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "description": "Enter paymentMethod"
+          },
+          "shippingAddress": {
+            "type": "string",
+            "description": "Enter shippingAddress"
+          }
+        }
+      },
         "updateBooking": {
           "type": "object",
           "properties": {

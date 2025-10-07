@@ -1,20 +1,13 @@
 import * as Model from "../models/index.js";
 import { errorRes, successRes } from "../utils/response.js";
 import "dotenv/config";
-
+import Razorpay from "razorpay";
 const userServices = {
-  addInCart: async (req, res) => {
+   addInCart: async (req, res) => {
     try {
       const userId = req.user._id;
-      const {
-        type,
-        basketId,
-        name,
-        products,
-        productId,
-        quantity,
-        replacements,
-      } = req.body;
+      const { basketId, products, productId, quantity, replacements } =
+        req.body;
 
       let cart = await Model.Cart.findOne({ userId });
 
@@ -22,8 +15,13 @@ const userServices = {
         cart = new Model.Cart({ userId });
       }
 
-      if (type === "basket") {
-        const basketType = name ? "custom" : "predefined";
+      if (basketId) {
+        const basketData = await Model.Basket.findById(basketId);
+        if (!basketData) {
+          return errorRes(res, 404, "Basket not found");
+        }
+        const basketType =
+          basketData?.box_type == "Custom" ? "custom" : "predefined";
 
         // Validate replacements only for predefined basket
         if (
@@ -41,11 +39,10 @@ const userServices = {
         cart.baskets.push({
           basketId,
           type: basketType,
-          name: name || null,
           products: products || [],
           replacements: basketType === "predefined" ? replacements || [] : [],
         });
-      } else if (type === "product") {
+      } else {
         // Add individual product
         const existingProduct = cart.individualProducts.find(
           (p) => p.productId.toString() === productId
@@ -59,12 +56,10 @@ const userServices = {
             quantity: quantity || 1,
           });
         }
-      } else {
-        return errorRes(res, 400, "Invalid type");
       }
 
       await cart.save();
-      return successRes(res, 200, "Cart added successfully", Cart);
+      return successRes(res, 200, "Cart added successfully", cart);
     } catch (error) {
       return errorRes(res, 500, error.message);
     }
@@ -154,14 +149,14 @@ const userServices = {
       return errorRes(res, 500, error.message);
     }
   },
-  homeScreen: async (req, res) => {
+homeScreen: async (req, res) => {
     try {
       const allBoxes = await Model.Basket.find({}).lean();
       const boxesFilter = allBoxes.reduce(
         (acc, box) => {
-          if (box.box_type === 1) {
+          if (box.box_type === 0) {
             acc.custom.push(box);
-          } else if (box.box_type === 2) {
+          } else if (box.box_type === 1) {
             acc.goodness.push(box);
           }
           return acc;
@@ -181,251 +176,330 @@ const userServices = {
       return errorRes(res, 500, error.message);
     }
   },
-  buyNow : async (req, res) => {
-  try {
-    const userId = req.user.id;
- 
-    const cart = await Model.Cart.findOne({ userId })
-      .populate("baskets.products.productId")
-      .populate("baskets.replacements.originalProductId")
-      .populate("baskets.replacements.newProductId")
-      .populate("individualProducts.productId");
- 
-    if (!cart) {
-      return errorRes(res, 404, "Cart not found")
-    }
- 
-    const unavailableItems = [];
- 
-    // 1. Check individual products
-    for (const item of cart.individualProducts) {
-      const product = item.productId;
-      if (!product || product.stock < item.quantity) {
-        unavailableItems.push({
-          type: "individual",
-          productId: product?._id,
-          name: product?.name || "Unknown product",
-          reason: "Out of stock or insufficient quantity",
-        });
+  buyNow: async (req, res) => {
+    try {
+      const userId = req.user.id;
+
+      const cart = await Model.Cart.findOne({ userId })
+        .populate("baskets.products.productId")
+        .populate("baskets.replacements.originalProductId")
+        .populate("baskets.replacements.newProductId")
+        .populate("individualProducts.productId");
+
+      if (!cart) {
+        return errorRes(res, 404, "Cart not found");
       }
-    }
- 
-    // 2. Check products in baskets
-    for (const basket of cart.baskets) {
-      for (const item of basket.products) {
+
+      const unavailableItems = [];
+
+      // 1. Check individual products
+      for (const item of cart.individualProducts) {
         const product = item.productId;
         if (!product || product.stock < item.quantity) {
           unavailableItems.push({
-            type: "basket",
-            basketId: basket.basketId,
+            type: "individual",
             productId: product?._id,
             name: product?.name || "Unknown product",
             reason: "Out of stock or insufficient quantity",
           });
         }
       }
- 
-      // 3. Optionally, check replacements if needed (optional logic)
-      for (const replacement of basket.replacements) {
-        const product = replacement.newProductId;
-        if (!product || product.stock < 1) {
-          unavailableItems.push({
-            type: "replacement",
-            originalProductId: replacement.originalProductId?._id,
-            newProductId: product?._id,
-            name: product?.name || "Replacement product unavailable",
-            reason: "Replacement product is unavailable or out of stock",
-          });
+
+      // 2. Check products in baskets
+      for (const basket of cart.baskets) {
+        for (const item of basket.products) {
+          const product = item.productId;
+          if (!product || product.stock < item.quantity) {
+            unavailableItems.push({
+              type: "basket",
+              basketId: basket.basketId,
+              productId: product?._id,
+              name: product?.name || "Unknown product",
+              reason: "Out of stock or insufficient quantity",
+            });
+          }
+        }
+
+        // 3. Optionally, check replacements if needed (optional logic)
+        for (const replacement of basket.replacements) {
+          const product = replacement.newProductId;
+          if (!product || product.stock < 1) {
+            unavailableItems.push({
+              type: "replacement",
+              originalProductId: replacement.originalProductId?._id,
+              newProductId: product?._id,
+              name: product?.name || "Replacement product unavailable",
+              reason: "Replacement product is unavailable or out of stock",
+            });
+          }
         }
       }
-    }
- 
-    if (unavailableItems.length > 0) {
-      return errorRes(res, 400, "Some items are not available for purchase", unavailableItems)
-    }
- 
-    // All products are available
-    return successRes(res, 200, "All items are available. Proceed to checkout")
-    
-  } catch (error) {
-    console.error("Buy Now Error:", error);
-    return errorRes(res, 500, error.message);
-  }
-},
- createPaymentIntent : async (req, res) => {
-  try {
-    const userId = req.user.id;
- 
-    const cart = await Model.Cart.findOne({ userId })
-      .populate("baskets.products.productId")
-      .populate("individualProducts.productId");
- 
-    if (!cart) {
-      return errorRes(res, 404, "Cart not found");
-    }
- 
-    // Calculate total amount
-    let totalAmount = 0;
- 
-    for (const item of cart.individualProducts) {
-      totalAmount += item.productId.price * item.quantity;
-    }
- 
-    for (const basket of cart.baskets) {
-      for (const item of basket.products) {
-        totalAmount += item.productId.price * item.quantity;
+
+      if (unavailableItems.length > 0) {
+        return errorRes(
+          res,
+          400,
+          "Some items are not available for purchase",
+          unavailableItems
+        );
       }
+
+      // All products are available
+      return successRes(
+        res,
+        200,
+        "All items are available. Proceed to checkout"
+      );
+    } catch (error) {
+      console.error("Buy Now Error:", error);
+      return errorRes(res, 500, error.message);
     }
- 
-    const amountInPaise = totalAmount * 100;
- 
-    const razorpayOrder = await razorpay.orders.create({
-      amount: amountInPaise,
-      currency: "INR",
-      receipt: `rcpt_${Date.now()}`,
-    });
-     let data = {
-  razorpayOrderId: razorpayOrder.id,
-      amount: totalAmount,
-      currency: "INR",
-      key: process.env.RAZORPAY_KEY_ID,
-     }
-     return successRes(res, 200, "Create payment intent", data)
-  } catch (error) {
-    console.error("Create Razorpay Order Failed:", error);
-    return errorRes(res, 500, error.message)
-  }
-},
- verifyPayment : async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const {
-      razorpay_payment_id,
-      razorpay_order_id,
-      razorpay_signature,
-      shippingAddress,
-      paymentMethod,
-    } = req.body;
- 
-    // 1. Verify signature
-    const generatedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-      .update(razorpay_order_id + "|" + razorpay_payment_id)
-      .digest("hex");
- 
-    if (generatedSignature !== razorpay_signature) {
-      return res.status(400).json({ message: "Invalid payment signature" });
+  },
+  createPaymentIntent: async (req, res) => {
+    try {
+      const userId = req.user.id;
+const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+  });
+      const cart = await Model.Cart.findOne({ userId })
+        .populate("baskets.products.productId")
+        .populate("individualProducts.productId");
+
+      if (!cart) {
+        return errorRes(res, 404, "Cart not found");
+      }
+
+      // Calculate total amount
+      let totalAmount = 0;
+
+      for (const item of cart.individualProducts) {
+        totalAmount += item.productId.product_price * item.quantity;
+      }
+
+      for (const basket of cart.baskets) {
+        for (const item of basket.products) {
+          totalAmount += item.productId.product_price * item.quantity;
+        }
+      }
+
+      const amountInPaise = totalAmount * 100;
+
+      const razorpayOrder = await razorpay.orders.create({
+        amount: amountInPaise,
+        currency: "INR",
+        receipt: `rcpt_${Date.now()}`,
+      });
+      let data = {
+        razorpayOrderId: razorpayOrder.id,
+        amount: totalAmount,
+        currency: "INR",
+        key: process.env.RAZORPAY_KEY_ID,
+      };
+      return successRes(res, 200, "Create payment intent", data);
+    } catch (error) {
+      console.error("Create Razorpay Order Failed:", error);
+      return errorRes(res, 500, error.message);
     }
- 
-    // 2. Get user's cart
-    const cart = await Model.Cart.findOne({ userId });
- 
-    if (!cart || (!cart.individualProducts.length && !cart.baskets.length)) {
-      return errorRes(res, 400, "Cart is empty or invalid")
-    }
- 
-    // 3. Calculate total again (double-check)
-    let totalAmount = 0;
- 
-    for (const item of cart.individualProducts) {
-      const product = await Model.Product.findById(item.productId);
-      totalAmount += product.price * item.quantity;
-    }
- 
-    for (const basket of cart.baskets) {
-      for (const item of basket.products) {
+  },
+  verifyPayment: async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const {
+        razorpay_payment_id,
+        razorpay_order_id,
+        razorpay_signature,
+        shippingAddress,
+        paymentMethod,
+      } = req.body;
+
+      // 1. Verify signature
+      const generatedSignature = crypto
+        .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+        .update(razorpay_order_id + "|" + razorpay_payment_id)
+        .digest("hex");
+
+      if (generatedSignature !== razorpay_signature) {
+        return res.status(400).json({ message: "Invalid payment signature" });
+      }
+
+      // 2. Get user's cart
+      const cart = await Model.Cart.findOne({ userId });
+
+      if (!cart || (!cart.individualProducts.length && !cart.baskets.length)) {
+        return errorRes(res, 400, "Cart is empty or invalid");
+      }
+
+      // 3. Calculate total again (double-check)
+      let totalAmount = 0;
+
+      for (const item of cart.individualProducts) {
         const product = await Model.Product.findById(item.productId);
         totalAmount += product.price * item.quantity;
       }
-    }
- 
-    // 4. Create order in DB
-    const order = await Model.Order.create({
-      userId,
-      baskets: cart.baskets,
-      individualProducts: cart.individualProducts,
-      totalAmount,
-      paymentStatus: "paid",
-      paymentMethod: paymentMethod || "card",
-      shippingAddress,
-    });
- 
-    // 5. Decrement product stock
-    for (const item of cart.individualProducts) {
-      await Model.Product.findByIdAndUpdate(item.productId, {
-        $inc: { stock: -item.quantity },
+
+      for (const basket of cart.baskets) {
+        for (const item of basket.products) {
+          const product = await Model.Product.findById(item.productId);
+          totalAmount += product.price * item.quantity;
+        }
+      }
+
+      // 4. Create order in DB
+      const order = await Model.Order.create({
+        userId,
+        baskets: cart.baskets,
+        individualProducts: cart.individualProducts,
+        totalAmount,
+        paymentStatus: "paid",
+        paymentMethod: paymentMethod || "card",
+        shippingAddress,
       });
-    }
- 
-    for (const basket of cart.baskets) {
-      for (const item of basket.products) {
+
+      // 5. Decrement product stock
+      for (const item of cart.individualProducts) {
         await Model.Product.findByIdAndUpdate(item.productId, {
           $inc: { stock: -item.quantity },
         });
       }
-    }
- 
-    // 6. Clear cart
-    cart.individualProducts = [];
-    cart.baskets = [];
-    await cart.save();
-    return successRes(res, 200, "Payment verified and order placed successfully",{orderId: order._id})
-  } catch (error) {
-    console.error("Payment Verification Failed:", error);
-    return errorRes(res, 500, error.message)
-   
-  }
-},
- getCartItems : async (req, res) => {
-  try {
-    const userId = req.user.id;
- 
-    const cart = await Model.Cart.findOne({ userId })
-      .populate("baskets.products.productId")
-      .populate("baskets.basketId")
-      .populate("individualProducts.productId");
- 
-    if (!cart) {
-      return res.status(200).json({
-        individualProducts: [],
-        baskets: [],
-        totalAmount: 0,
-        detailedItems: [],
-      });
-    }
- 
-    const { totalAmount, detailedItems } = await calculateCartTotal(cart);
- 
 
-      let data ={
-individualProducts: cart.individualProducts.map((item) => ({
-        productId: item.productId._id,
-        name: item.productId.name,
-        quantity: item.quantity,
-        price: item.productId.price,
-      })),
- 
-      baskets: cart.baskets.map((basket) => ({
-        basketId: basket.basketId._id,
-        name: basket.basketId.name,
-        type: basket.type,
-        products: basket.products.map((item) => ({
+      for (const basket of cart.baskets) {
+        for (const item of basket.products) {
+          await Model.Product.findByIdAndUpdate(item.productId, {
+            $inc: { stock: -item.quantity },
+          });
+        }
+      }
+
+      // 6. Clear cart
+      cart.individualProducts = [];
+      cart.baskets = [];
+      await cart.save();
+      return successRes(
+        res,
+        200,
+        "Payment verified and order placed successfully",
+        { orderId: order._id }
+      );
+    } catch (error) {
+      console.error("Payment Verification Failed:", error);
+      return errorRes(res, 500, error.message);
+    }
+  },
+  getCartItems: async (req, res) => {
+    try {
+      const userId = req.user.id;
+
+      const cart = await Model.Cart.findOne({ userId })
+        .populate("baskets.products.productId")
+        .populate("baskets.basketId")
+        .populate("individualProducts.productId");
+     console.log(cart, "cart")
+      if (!cart) {
+        return res.status(200).json({
+          individualProducts: [],
+          baskets: [],
+          totalAmount: 0,
+          detailedItems: [],
+        });
+      }
+
+      const { totalAmount, detailedItems } = await calculateCartTotal(cart);
+
+      let data = {
+        individualProducts: cart.individualProducts.map((item) => ({
           productId: item.productId._id,
-          name: item.productId.name,
+          name: item.productId.product_name,
           quantity: item.quantity,
           price: item.productId.price,
         })),
-      })),
- 
-      totalAmount,
-      detailedItems, // optional: for displaying itemized summary
-      }
-      return successRes(res, 200, "Cart data", data)
-  } catch (err) {
-    console.error("Failed to get cart items:", err);
-    res.status(500).json({ message: "Internal server error" });
-  }
-},
+
+        baskets: cart.baskets.map((basket) => ({
+          basketId: basket.basketId._id,
+          name: basket.basketId.product_name,
+          type: basket.type,
+          products: basket.products.map((item) => ({
+            productId: item.productId._id,
+            name: item.productId.product_name,
+            quantity: item.quantity,
+            price: item.productId.price,
+          })),
+        })),
+
+        totalAmount,
+        detailedItems, // optional: for displaying itemized summary
+      };
+      return successRes(res, 200, "Cart data", data);
+    } catch (err) {
+      console.error("Failed to get cart items:", err);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  },
 };
 
+const calculateCartTotal = (cart) => {
+  let totalAmount = 0;
+  const detailedItems = [];
+
+  // Calculate individual products total
+  if (cart.individualProducts && cart.individualProducts.length > 0) {
+    for (const item of cart.individualProducts) {
+      if (item.productId && item.productId.product_price) {
+        const itemTotal = item.productId.product_price * item.quantity;
+        totalAmount += itemTotal;
+        
+        detailedItems.push({
+          type: 'individual',
+          productId: item.productId._id,
+          name: item.productId.product_name,
+          quantity: item.quantity,
+          price: item.productId.price,
+          total: itemTotal
+        });
+      }
+    }
+  }
+
+  // Calculate baskets total
+  if (cart.baskets && cart.baskets.length > 0) {
+    for (const basket of cart.baskets) {
+      let basketTotal = 0;
+      const basketItems = [];
+
+      if (basket.products && basket.products.length > 0) {
+        for (const item of basket.products) {
+          if (item.productId && item.productId.product_price) {
+            const itemTotal = item.productId.product_price * item.quantity;
+            basketTotal += itemTotal;
+            
+            basketItems.push({
+              productId: item.productId._id,
+              name: item.productId.product_name,
+              quantity: item.quantity,
+              price: item.productId.product_price,
+              total: itemTotal
+            });
+          }
+        }
+      }
+
+      totalAmount += basketTotal;
+
+      detailedItems.push({
+        type: 'basket',
+        basketId: basket.basketId?._id,
+        basketName: basket.basketId?.product_name,
+        basketType: basket.type,
+        items: basketItems,
+        total: basketTotal
+      });
+    }
+  }
+
+  // Round to 2 decimal places
+  return {
+    totalAmount: Math.round(totalAmount * 100) / 100,
+    detailedItems
+  };
+};
 export default userServices;

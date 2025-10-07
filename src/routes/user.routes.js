@@ -40,5 +40,14 @@ router.route("/getAddressById/:addressId").get(userController.getAddressById);
 router.route("/delAddress/:addressId").delete(userController.delAddress);
 router.route("/updateAddress/:addressId").put(validations.validateUpdateAddress, userController.updateAddress);
 
+//Home & Cart Flow
+router.route("/homeScreen").get(userController.homeScreen);
+router.route("/buyNow").get(userController.buyNow);
+router.route("/createPaymentIntent").post(userController.createPaymentIntent);
+router.route("/verifyPayment").post(userController.verifyPayment);
+router.route("/addInCart").post(userController.addInCart);
+
+router.route("/getCartItems").get(userController.getCartItems);
+
 
 export default router;

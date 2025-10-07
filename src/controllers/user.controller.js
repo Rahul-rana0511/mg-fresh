@@ -89,11 +89,14 @@ createProfile: async (req, res) => {
   delAddress: async (req, res) => {
     await userServices.delAddress(req, res);
   },
-  createPaymentIntent: async (req, res) => {
+ createPaymentIntent: async (req, res) => {
     await userServices.createPaymentIntent(req, res);
   },
   verifyPayment: async (req, res) => {
     await userServices.verifyPayment(req, res);
+  },
+  addInCart: async (req, res) => {
+    await userServices.addInCart(req, res);
   },
   getCartItems: async (req, res) => {
     await userServices.getCartItems(req, res);
