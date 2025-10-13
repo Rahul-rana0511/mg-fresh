@@ -3,7 +3,7 @@ import { errorRes, successRes } from "../utils/response.js";
 import "dotenv/config";
 import Razorpay from "razorpay";
 const userServices = {
-   addInCart: async (req, res) => {
+  addInCart: async (req, res) => {
     try {
       const userId = req.user._id;
       const { basketId, products, productId, quantity, replacements } =
@@ -20,8 +20,7 @@ const userServices = {
         if (!basketData) {
           return errorRes(res, 404, "Basket not found");
         }
-        const basketType =
-          basketData?.box_type == "Custom" ? "custom" : "predefined";
+        const basketType = basketData?.box_type == 1 ? "custom" : "predefined";
 
         // Validate replacements only for predefined basket
         if (
@@ -149,7 +148,7 @@ const userServices = {
       return errorRes(res, 500, error.message);
     }
   },
-homeScreen: async (req, res) => {
+  homeScreen: async (req, res) => {
     try {
       const allBoxes = await Model.Basket.find({}).lean();
       const boxesFilter = allBoxes.reduce(
@@ -258,10 +257,10 @@ homeScreen: async (req, res) => {
   createPaymentIntent: async (req, res) => {
     try {
       const userId = req.user.id;
-const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID,
-    key_secret: process.env.RAZORPAY_KEY_SECRET,
-  });
+      const razorpay = new Razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID,
+        key_secret: process.env.RAZORPAY_KEY_SECRET,
+      });
       const cart = await Model.Cart.findOne({ userId })
         .populate("baskets.products.productId")
         .populate("individualProducts.productId");
@@ -353,7 +352,7 @@ const razorpay = new Razorpay({
         totalAmount,
         paymentStatus: "paid",
         paymentMethod: paymentMethod || "card",
-        shippingAddress,
+        shippingAddress: cart?.selectedAddress,
       });
 
       // 5. Decrement product stock
@@ -394,7 +393,7 @@ const razorpay = new Razorpay({
         .populate("baskets.products.productId")
         .populate("baskets.basketId")
         .populate("individualProducts.productId");
-     console.log(cart, "cart")
+      console.log(cart, "cart");
       if (!cart) {
         return res.status(200).json({
           individualProducts: [],
@@ -435,6 +434,86 @@ const razorpay = new Razorpay({
       res.status(500).json({ message: "Internal server error" });
     }
   },
+  chooseAddress: async (req, res) => {
+    try {
+      const cart = await Model.Cart.findByIdAndUpdate(
+        req.body.cartId,
+        { $set: { selectedAddress: req.body.addressId } },
+        { new: true }
+      );
+      if(!cart){
+        return errorRes(res, 404, "cart not found")
+      }
+      return successRes(res, 200, "Address added successfully", cart);
+    } catch (error) {
+      res.status(400).json({ success: false, message: error.message });
+    }
+  },
+  getMyOrders: async (req, res) => {
+    try {
+      const userId = req.user.id;
+
+      const orders = await Model.Order.findOne({ userId })
+        .sort({ createdAt: -1 })
+        .populate("baskets.products.productId")
+        .populate("baskets.basketId")
+        .populate("individualProducts.productId");
+
+      return successRes(res, 200, "Cart data", orders);
+    } catch (err) {
+      console.error("Failed to get cart items:", err);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  },
+  getOrderById: async (req, res) => {
+    try {
+      const orderDetails = await Model.Order.findById(req.query.orderId)
+        .populate("baskets.products.productId")
+        .populate("baskets.basketId")
+        .populate("individualProducts.productId");
+
+      return successRes(res, 200, "Cart data", orderDetails);
+    } catch (err) {
+      console.error("Failed to get cart items:", err);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  },
+  getAllOrders: async (req, res) => {
+    try {
+      const orderDetails = await Model.Order.find({})
+        .sort({ createdAt: -1 })
+        .populate("baskets.products.productId")
+        .populate("baskets.basketId")
+        .populate("individualProducts.productId");
+
+      return successRes(res, 200, "Cart data", orderDetails);
+    } catch (err) {
+      console.error("Failed to get cart items:", err);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  },
+  updateOrderStatus: async (req, res) => {
+    try {
+      const orderDetails = await Model.Order.findByIdAndUpdate(
+        req.body.orderId,
+        { $set: { status: req.body.status } },
+        { new: true }
+      );
+      if (!orderDetails) {
+        return errorRes(res, 404, "Order not found");
+      }
+
+      return successRes(
+        res,
+        200,
+        "Order status updated successfully",
+        orderDetails
+      );
+    } catch (err) {
+      console.error("Failed to get cart items:", err);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  },
 };
 
 const calculateCartTotal = (cart) => {
@@ -447,14 +526,14 @@ const calculateCartTotal = (cart) => {
       if (item.productId && item.productId.product_price) {
         const itemTotal = item.productId.product_price * item.quantity;
         totalAmount += itemTotal;
-        
+
         detailedItems.push({
-          type: 'individual',
+          type: "individual",
           productId: item.productId._id,
           name: item.productId.product_name,
           quantity: item.quantity,
           price: item.productId.price,
-          total: itemTotal
+          total: itemTotal,
         });
       }
     }
@@ -471,13 +550,13 @@ const calculateCartTotal = (cart) => {
           if (item.productId && item.productId.product_price) {
             const itemTotal = item.productId.product_price * item.quantity;
             basketTotal += itemTotal;
-            
+
             basketItems.push({
               productId: item.productId._id,
               name: item.productId.product_name,
               quantity: item.quantity,
               price: item.productId.product_price,
-              total: itemTotal
+              total: itemTotal,
             });
           }
         }
@@ -486,12 +565,12 @@ const calculateCartTotal = (cart) => {
       totalAmount += basketTotal;
 
       detailedItems.push({
-        type: 'basket',
+        type: "basket",
         basketId: basket.basketId?._id,
         basketName: basket.basketId?.product_name,
         basketType: basket.type,
         items: basketItems,
-        total: basketTotal
+        total: basketTotal,
       });
     }
   }
@@ -499,7 +578,7 @@ const calculateCartTotal = (cart) => {
   // Round to 2 decimal places
   return {
     totalAmount: Math.round(totalAmount * 100) / 100,
-    detailedItems
+    detailedItems,
   };
 };
 export default userServices;

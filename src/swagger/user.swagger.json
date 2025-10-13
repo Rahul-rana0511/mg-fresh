@@ -1001,6 +1001,170 @@
           }
         ]
       }
+    },
+    "/api/user/getAllOrders": {
+      "get": {
+        "tags": [
+          "Core Functionality"
+        ],
+        "summary": " Get All orders Api",
+        "responses": {
+          "200": {
+            "description": "Successful Operation"
+          },
+          "400": {
+            "description": "Bad request - Invalid input, validation error"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication failure"
+          },
+          "500": {
+            "description": "Internal server error - Something went wrong on the server side"
+          }
+        },
+        "security": [
+          {
+            "access_token": [
+              "access_token"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/user/getOrderById": {
+      "get": {
+        "tags": [
+          "Core Functionality"
+        ],
+        "summary": " Get order by id Api",
+         "parameters": [{ "$ref": "#/components/parameters/orderId" }],
+        "responses": {
+          "200": {
+            "description": "Successful Operation"
+          },
+          "400": {
+            "description": "Bad request - Invalid input, validation error"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication failure"
+          },
+          "500": {
+            "description": "Internal server error - Something went wrong on the server side"
+          }
+        },
+        "security": [
+          {
+            "access_token": [
+              "access_token"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/user/getMyOrders": {
+      "get": {
+        "tags": [
+          "Core Functionality"
+        ],
+        "summary": " Get My Orders Api",
+        "responses": {
+          "200": {
+            "description": "Successful Operation"
+          },
+          "400": {
+            "description": "Bad request - Invalid input, validation error"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication failure"
+          },
+          "500": {
+            "description": "Internal server error - Something went wrong on the server side"
+          }
+        },
+        "security": [
+          {
+            "access_token": [
+              "access_token"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/user/updateOrderStatus": {
+      "put": {
+        "tags": [
+          "Core Functionality"
+        ],
+        "summary": "update Order Status Api",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/updateOrderStatus"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Operation"
+          },
+          "400": {
+            "description": "Bad request - Invalid input, validation error"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication failure"
+          },
+          "500": {
+            "description": "Internal server error - Something went wrong on the server side"
+          }
+        },
+        "security": [
+          {
+            "access_token": [
+              "access_token"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/user/chooseAddress": {
+      "post": {
+        "tags": [
+          "Core Functionality"
+        ],
+        "summary": "choose Address Api",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/chooseAddress"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Operation"
+          },
+          "400": {
+            "description": "Bad request - Invalid input, validation error"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication failure"
+          },
+          "500": {
+            "description": "Internal server error - Something went wrong on the server side"
+          }
+        },
+        "security": [
+          {
+            "access_token": [
+              "access_token"
+            ]
+          }
+        ]
+      }
     }
     },
     "components": {
@@ -1292,6 +1456,33 @@
               "items": {
                 "type": "string"
               }
+            }
+          }
+        },
+         "chooseAddress": {
+          "type": "object",
+          "properties": {
+             "cartId": {
+              "type": "string",
+              "description": "Enter basket_name"
+            },
+            "addressId": {
+              "type": "string",
+              "description": "Enter basket_type"
+            }
+          }
+        },
+        "updateOrderStatus": {
+          "type": "object",
+          "properties": {
+             "orderId": {
+              "type": "string",
+              "description": "Enter basket_name"
+            },
+            "status": {
+              "type": "string",
+              "description": "Enter basket_type",
+              "example":"pending confirmed shipped delivered cancelled"
             }
           }
         },
@@ -1974,6 +2165,16 @@
         "productId": {
           "name": "productId",
           "in": "path",
+          "required": false,
+          "schema": {
+            "type": "string"
+          },
+          "style": "form",
+          "explode": true
+        },
+         "orderId": {
+          "name": "orderId",
+          "in": "query",
           "required": false,
           "schema": {
             "type": "string"

@@ -84,8 +84,9 @@ const orderSchema = new Schema(
     },
 
     shippingAddress: {
-      type: String,
-      default: null,
+       type: Schema.Types.ObjectId,
+      ref: "Address",
+      default: null
     },
   },
   { timestamps: true }

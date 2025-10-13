@@ -67,6 +67,11 @@ const cartSchema = new Schema(
         },
       },
     ],
+    selectedAddress: {
+      type: Schema.Types.ObjectId,
+      ref: "Address",
+      default: null
+    },
   },
   { timestamps: true }
 );

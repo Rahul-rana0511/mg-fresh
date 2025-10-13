@@ -49,5 +49,13 @@ router.route("/addInCart").post(userController.addInCart);
 
 router.route("/getCartItems").get(userController.getCartItems);
 
+//Order Flow
+router.route("/updateOrderStatus").put(userController.updateOrderStatus);
+router.route("/getAllOrders").get(userController.getAllOrders);
+router.route("/getOrderById").get(userController.getOrderById);
+router.route("/getMyOrders").get(userController.getMyOrders);
+router.route("/chooseAddress").post(userController.chooseAddress);
+
+
 
 export default router;

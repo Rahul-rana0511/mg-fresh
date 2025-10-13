@@ -101,5 +101,20 @@ createProfile: async (req, res) => {
   getCartItems: async (req, res) => {
     await userServices.getCartItems(req, res);
   },
+   chooseAddress: async (req, res) => {
+    await userServices.chooseAddress(req, res);
+  },
+   getMyOrders: async (req, res) => {
+    await userServices.getMyOrders(req, res);
+  },
+   getOrderById: async (req, res) => {
+    await userServices.getOrderById(req, res);
+  },
+   getAllOrders: async (req, res) => {
+    await userServices.getAllOrders(req, res);
+  },
+   updateOrderStatus: async (req, res) => {
+    await userServices.updateOrderStatus(req, res);
+  },
 };
 export default userController;
