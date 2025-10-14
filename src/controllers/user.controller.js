@@ -119,5 +119,8 @@ createProfile: async (req, res) => {
   emptyCart: async (req, res) => {
     await userServices.emptyCart(req, res);
   },
+  buyAgain: async (req, res) => {
+    await userServices.buyAgain(req, res);
+  },
 };
 export default userController;

@@ -65,6 +65,92 @@ const userServices = {
     }
   },
 
+  updateCartQuantity: async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { basketId, productId, action } = req.body;
+    // action: "increase" | "decrease"
+
+    if (!["increase", "decrease"].includes(action)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid action. Use 'increase' or 'decrease'.",
+      });
+    }
+
+    const cart = await Model.Cart.findOne({ userId });
+    if (!cart) {
+      return res.status(404).json({ success: false, message: "Cart not found" });
+    }
+
+    let updated = false;
+
+    // 🧺 Case 1: Update product inside a basket
+    if (basketId && productId) {
+      const basket = cart.baskets.find(
+        (b) => b.basketId.toString() === basketId.toString()
+      );
+      if (!basket) {
+        return res.status(404).json({ success: false, message: "Basket not found in cart" });
+      }
+
+      const product = basket.products.find(
+        (p) => p.productId.toString() === productId.toString()
+      );
+      if (!product) {
+        return res.status(404).json({ success: false, message: "Product not found in basket" });
+      }
+
+      if (action === "increase") {
+        product.quantity += 1;
+      } else {
+        product.quantity = Math.max(1, product.quantity - 1);
+      }
+
+      updated = true;
+    }
+
+    // 🍎 Case 2: Update individual product quantity
+    else if (productId && !basketId) {
+      const product = cart.individualProducts.find(
+        (p) => p.productId.toString() === productId.toString()
+      );
+      if (!product) {
+        return res.status(404).json({ success: false, message: "Product not found in cart" });
+      }
+
+      if (action === "increase") {
+        product.quantity += 1;
+      } else {
+        // remove if quantity becomes 0
+        product.quantity -= 1;
+        if (product.quantity <= 0) {
+          cart.individualProducts = cart.individualProducts.filter(
+            (p) => p.productId.toString() !== productId.toString()
+          );
+        }
+      }
+
+      updated = true;
+    }
+
+    if (!updated) {
+      return res.status(400).json({ success: false, message: "Invalid update request" });
+    }
+
+    await cart.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Cart updated successfully",
+      cart,
+    });
+  } catch (error) {
+    console.error("Update Cart Error:", error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+},
+
   createAddress: async (req, res) => {
     try {
       if (req.body.lat && req.body.long) {
@@ -533,6 +619,51 @@ const userServices = {
       res.status(500).json({ message: "Internal server error" });
     }
   },
+  buyAgain: async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const orders = await Model.Order.find({ userId })
+      .populate("baskets.basketId")
+      .populate("individualProducts.productId");
+
+    if (!orders.length) {
+      return successRes(res, 200, "Product listing", [])
+    }
+
+    const uniqueBaskets = new Map();
+    const uniqueProducts = new Map();
+
+    orders.forEach(order => {
+      // 🧺 Add unique baskets (as full object)
+      order.baskets.forEach(basket => {
+        const basketId = basket.basketId?._id?.toString();
+        if (basketId && !uniqueBaskets.has(basketId)) {
+          uniqueBaskets.set(basketId, basket);
+        }
+      });
+
+      // 🍎 Add unique individual products (as full object)
+      order.individualProducts.forEach(prod => {
+        const pid = prod.productId?._id?.toString();
+        if (pid && !uniqueProducts.has(pid)) {
+          uniqueProducts.set(pid, prod);
+        }
+      });
+    });
+
+    const items = [
+      ...Array.from(uniqueBaskets.values()),
+      ...Array.from(uniqueProducts.values()),
+    ];
+    return successRes(res, 200, "Product Listing", items)
+  } catch (error) {
+    console.error("Buy Again Error:", error);
+    return errorRes(res, 500, error.message);
+    return res.status(500).json({ message: "Server error" });
+  }
+},
+
 };
 
 const calculateCartTotal = (cart) => {
