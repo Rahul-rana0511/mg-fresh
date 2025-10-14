@@ -335,13 +335,13 @@ const userServices = {
 
       for (const item of cart.individualProducts) {
         const product = await Model.Product.findById(item.productId);
-        totalAmount += product.price * item.quantity;
+        totalAmount += product.product_price * item.quantity;
       }
 
       for (const basket of cart.baskets) {
         for (const item of basket.products) {
           const product = await Model.Product.findById(item.productId);
-          totalAmount += product.price * item.quantity;
+          totalAmount += product.product_price * item.quantity;
         }
       }
 
@@ -508,6 +508,24 @@ const userServices = {
         res,
         200,
         "Order status updated successfully",
+        orderDetails
+      );
+    } catch (err) {
+      console.error("Failed to get cart items:", err);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  },
+   emptyCart: async (req, res) => {
+    try {
+      const orderDetails = await Model.Cart.findOneAndDelete({userId: req.user._id});
+      if (!orderDetails) {
+        return errorRes(res, 404, "Cart not found");
+      }
+
+      return successRes(
+        res,
+        200,
+        "Cart empty successfully",
         orderDetails
       );
     } catch (err) {

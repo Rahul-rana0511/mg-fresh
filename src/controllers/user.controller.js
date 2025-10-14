@@ -116,5 +116,8 @@ createProfile: async (req, res) => {
    updateOrderStatus: async (req, res) => {
     await userServices.updateOrderStatus(req, res);
   },
+  emptyCart: async (req, res) => {
+    await userServices.emptyCart(req, res);
+  },
 };
 export default userController;

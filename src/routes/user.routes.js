@@ -46,7 +46,7 @@ router.route("/buyNow").get(userController.buyNow);
 router.route("/createPaymentIntent").post(userController.createPaymentIntent);
 router.route("/verifyPayment").post(userController.verifyPayment);
 router.route("/addInCart").post(userController.addInCart);
-
+router.route("/emptyCart").post(userController.emptyCart);
 router.route("/getCartItems").get(userController.getCartItems);
 
 //Order Flow
