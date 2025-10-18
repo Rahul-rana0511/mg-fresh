@@ -540,7 +540,7 @@ const userServices = {
     try {
       const userId = req.user.id;
 
-      const orders = await Model.Order.findOne({ userId })
+      const orders = await Model.Order.find({ userId })
         .sort({ createdAt: -1 })
         .populate("baskets.products.productId")
         .populate("baskets.basketId")
