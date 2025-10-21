@@ -65,8 +65,6 @@ const userServices = {
     }
   },
 
-
-
   createAddress: async (req, res) => {
     try {
       if (req.body.lat && req.body.long) {
@@ -77,12 +75,29 @@ const userServices = {
       }
       req.body.userId = req.user._id;
       const address = await Model.Address.create(req.body);
+      const allAddress = await Model.Address.find({ userId: req.user._id });
+      if (allAddress.length == 1) {
+        req.user.active_address = address?._id;
+        await req.user.save();
+      }
       return successRes(res, 200, "Address added successfully", address);
     } catch (error) {
       res.status(400).json({ success: false, message: error.message });
     }
   },
+  updateActiveAddress: async (req, res) => {
+    try {
+      const updateData = await Model.User.findByIdAndUpdate(
+        req.user._id,
+        { $set: { active_address: req.body.active_address } },
+        { new: true }
+      );
 
+      return successRes(res, 200, "Address updated successfully", updateData);
+    } catch (error) {
+      res.status(400).json({ success: false, message: error.message });
+    }
+  },
   getAddresses: async (req, res) => {
     try {
       const addresses = await Model.Address.find({ userId: req.user._id });
@@ -271,7 +286,11 @@ const userServices = {
       if (!cart) {
         return errorRes(res, 404, "Cart not found");
       }
-
+      if (!req.user.active_address) {
+        return errorRes(res, 400, "Please add address first");
+      }
+      cart.selectedAddress = req.user.active_address;
+      await cart.save();
       // Calculate total amount
       let totalAmount = 0;
 
@@ -280,19 +299,19 @@ const userServices = {
       }
 
       for (const basket of cart.baskets) {
-      if (!basket.products?.length) continue;
+        if (!basket.products?.length) continue;
 
-      let basketTotal = 0;
+        let basketTotal = 0;
 
-      for (const item of basket.products) {
-        if (item.productId && item.productId.product_price) {
-          basketTotal += item.productId.product_price * item.quantity;
+        for (const item of basket.products) {
+          if (item.productId && item.productId.product_price) {
+            basketTotal += item.productId.product_price * item.quantity;
+          }
         }
-      }
 
-      // 👇 multiply by basket.quantity
-      totalAmount += basketTotal * (basket.quantity || 1);
-    }
+        // 👇 multiply by basket.quantity
+        totalAmount += basketTotal * (basket.quantity || 1);
+      }
 
       const amountInPaise = totalAmount * 100;
 
@@ -329,7 +348,7 @@ const userServices = {
       // .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
       // .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       // .digest('hex');
-      
+
       // if (generatedSignature !== razorpay_signature) {
       //   return res.status(400).json({ message: "Invalid payment signature" });
       // }
@@ -453,8 +472,8 @@ const userServices = {
         { $set: { selectedAddress: req.body.addressId } },
         { new: true }
       );
-      if(!cart){
-        return errorRes(res, 404, "cart not found")
+      if (!cart) {
+        return errorRes(res, 404, "cart not found");
       }
       return successRes(res, 200, "Address added successfully", cart);
     } catch (error) {
@@ -526,139 +545,127 @@ const userServices = {
       res.status(500).json({ message: "Internal server error" });
     }
   },
-   emptyCart: async (req, res) => {
+  emptyCart: async (req, res) => {
     try {
-      const orderDetails = await Model.Cart.findOneAndDelete({userId: req.user._id});
+      const orderDetails = await Model.Cart.findOneAndDelete({
+        userId: req.user._id,
+      });
       if (!orderDetails) {
         return errorRes(res, 404, "Cart not found");
       }
 
-      return successRes(
-        res,
-        200,
-        "Cart empty successfully",
-        orderDetails
-      );
+      return successRes(res, 200, "Cart empty successfully", orderDetails);
     } catch (err) {
       console.error("Failed to get cart items:", err);
       res.status(500).json({ message: "Internal server error" });
     }
   },
   buyAgain: async (req, res) => {
-  try {
-    const userId = req.user._id;
+    try {
+      const userId = req.user._id;
 
-    const orders = await Model.Order.find({ userId })
-      .populate("baskets.basketId")
-      .populate("individualProducts.productId");
+      const orders = await Model.Order.find({ userId })
+        .populate("baskets.basketId")
+        .populate("individualProducts.productId");
 
-    if (!orders.length) {
-      return successRes(res, 200, "Product listing", [])
-    }
+      if (!orders.length) {
+        return successRes(res, 200, "Product listing", []);
+      }
 
-    const uniqueBaskets = new Map();
-    const uniqueProducts = new Map();
+      const uniqueBaskets = new Map();
+      const uniqueProducts = new Map();
 
-    orders.forEach(order => {
-      // 🧺 Add unique baskets (as full object)
-      order.baskets.forEach(basket => {
-        const basketId = basket.basketId?._id?.toString();
-        if (basketId && !uniqueBaskets.has(basketId)) {
-          uniqueBaskets.set(basketId, basket);
-        }
+      orders.forEach((order) => {
+        // 🧺 Add unique baskets (as full object)
+        order.baskets.forEach((basket) => {
+          const basketId = basket.basketId?._id?.toString();
+          if (basketId && !uniqueBaskets.has(basketId)) {
+            uniqueBaskets.set(basketId, basket);
+          }
+        });
+
+        // 🍎 Add unique individual products (as full object)
+        order.individualProducts.forEach((prod) => {
+          const pid = prod.productId?._id?.toString();
+          if (pid && !uniqueProducts.has(pid)) {
+            uniqueProducts.set(pid, prod);
+          }
+        });
       });
 
-      // 🍎 Add unique individual products (as full object)
-      order.individualProducts.forEach(prod => {
-        const pid = prod.productId?._id?.toString();
-        if (pid && !uniqueProducts.has(pid)) {
-          uniqueProducts.set(pid, prod);
-        }
+      const items = [
+        ...Array.from(uniqueBaskets.values()),
+        ...Array.from(uniqueProducts.values()),
+      ];
+      return successRes(res, 200, "Product Listing", items);
+    } catch (error) {
+      console.error("Buy Again Error:", error);
+      return errorRes(res, 500, error.message);
+    }
+  },
+  updateCartQuantity: async (req, res) => {
+    try {
+      const userId = req.user._id;
+      const { type, basketId, productId, action } = req.body;
+
+      if (!["increase", "decrease"].includes(action)) {
+        return errorRes(res, 400, "Invalid action type");
+      }
+
+      const cart = await Model.Cart.findOne({ userId });
+      if (!cart) return errorRes(res, 404, "Cart not found");
+
+      // Determine action (+1 or -1)
+      const change = action === "increase" ? 1 : -1;
+
+      if (type === "individual") {
+        // 🧴 Update individual product quantity
+        const product = cart.individualProducts.find(
+          (p) => p.productId.toString() === productId
+        );
+        if (!product) return errorRes(res, 404, "Product not found in cart");
+
+        product.quantity = Math.max(1, product.quantity + change);
+      } else if (type === "basket") {
+        // 🧺 Update basket quantity
+        const basket = cart.baskets.find(
+          (b) => b.basketId.toString() === basketId
+        );
+        if (!basket) return errorRes(res, 404, "Basket not found");
+
+        basket.quantity = Math.max(1, (basket.quantity || 1) + change);
+      } else if (type === "basketProduct") {
+        // 🧺🎯 Update product inside a basket
+        const basket = cart.baskets.find(
+          (b) => b.basketId.toString() === basketId
+        );
+        if (!basket) return errorRes(res, 404, "Basket not found");
+
+        const product = basket.products.find(
+          (p) => p.productId.toString() === productId
+        );
+        if (!product) return errorRes(res, 404, "Product not found in basket");
+
+        product.quantity = Math.max(1, product.quantity + change);
+      } else {
+        return errorRes(res, 400, "Invalid type");
+      }
+
+      await cart.save();
+
+      // Optionally, recalc total if needed
+      const { totalAmount, detailedItems } = calculateCartTotal(cart);
+
+      return successRes(res, 200, "Cart updated successfully", {
+        totalAmount,
+        cart,
+        detailedItems,
       });
-    });
-
-    const items = [
-      ...Array.from(uniqueBaskets.values()),
-      ...Array.from(uniqueProducts.values()),
-    ];
-    return successRes(res, 200, "Product Listing", items)
-  } catch (error) {
-    console.error("Buy Again Error:", error);
-    return errorRes(res, 500, error.message);
-   
-  }
-},
-updateCartQuantity: async (req, res) => {
-  try {
-    const userId = req.user._id;
-    const { type, basketId, productId, action } = req.body;
-
-    if (!["increase", "decrease"].includes(action)) {
-      return errorRes(res, 400, "Invalid action type");
+    } catch (error) {
+      console.error("Error updating quantity:", error);
+      return errorRes(res, 500, error.message);
     }
-
-    const cart = await Model.Cart.findOne({ userId });
-    if (!cart) return errorRes(res, 404, "Cart not found");
-
-    // Determine action (+1 or -1)
-    const change = action === "increase" ? 1 : -1;
-
-    if (type === "individual") {
-      // 🧴 Update individual product quantity
-      const product = cart.individualProducts.find(
-        (p) => p.productId.toString() === productId
-      );
-      if (!product) return errorRes(res, 404, "Product not found in cart");
-
-      product.quantity = Math.max(1, product.quantity + change);
-    }
-
-    else if (type === "basket") {
-      // 🧺 Update basket quantity
-      const basket = cart.baskets.find(
-        (b) => b.basketId.toString() === basketId
-      );
-      if (!basket) return errorRes(res, 404, "Basket not found");
-
-      basket.quantity = Math.max(1, (basket.quantity || 1) + change);
-    }
-
-    else if (type === "basketProduct") {
-      // 🧺🎯 Update product inside a basket
-      const basket = cart.baskets.find(
-        (b) => b.basketId.toString() === basketId
-      );
-      if (!basket) return errorRes(res, 404, "Basket not found");
-
-      const product = basket.products.find(
-        (p) => p.productId.toString() === productId
-      );
-      if (!product) return errorRes(res, 404, "Product not found in basket");
-
-      product.quantity = Math.max(1, product.quantity + change);
-    }
-
-    else {
-      return errorRes(res, 400, "Invalid type");
-    }
-
-    await cart.save();
-
-    // Optionally, recalc total if needed
-    const { totalAmount, detailedItems } = calculateCartTotal(cart);
-
-    return successRes(res, 200, "Cart updated successfully", {
-      totalAmount,
-      cart,
-      detailedItems,
-    });
-  } catch (error) {
-    console.error("Error updating quantity:", error);
-    return errorRes(res, 500, error.message);
-  }
-},
-
-
+  },
 };
 
 const calculateCartTotal = (cart) => {

@@ -122,5 +122,8 @@ createProfile: async (req, res) => {
   buyAgain: async (req, res) => {
     await userServices.buyAgain(req, res);
   },
+  updateActiveAddress: async (req, res) => {
+    await userServices.updateActiveAddress(req, res);
+  },
 };
 export default userController;

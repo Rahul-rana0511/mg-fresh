@@ -78,6 +78,11 @@ const userSchema = new Schema(
       type: Number,
       default: 0,
     },
+     active_address:{
+      type: Schema.Types.ObjectId,
+      ref: "Address",
+      default: null,
+    }
   },
 
   { timestamps: true }

@@ -1166,6 +1166,44 @@
         ]
       }
     },
+    "/api/user/updateActiveAddress": {
+      "put": {
+        "tags": [
+          "Core Functionality"
+        ],
+        "summary": "update active address Api",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/updateActiveAddress"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Operation"
+          },
+          "400": {
+            "description": "Bad request - Invalid input, validation error"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication failure"
+          },
+          "500": {
+            "description": "Internal server error - Something went wrong on the server side"
+          }
+        },
+        "security": [
+          {
+            "access_token": [
+              "access_token"
+            ]
+          }
+        ]
+      }
+    },
     "/api/user/emptyCart": {
       "post": {
         "tags": [
@@ -1726,6 +1764,15 @@
           }
         }
       },
+        "updateActiveAddress": {
+          "type": "object",
+          "properties": {
+            "active_address": {
+              "type": "string",
+              "description": "Enter bookingId"
+            }
+          }
+        },
         "updateBooking": {
           "type": "object",
           "properties": {

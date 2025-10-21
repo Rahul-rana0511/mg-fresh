@@ -185,7 +185,7 @@ const authServices = {
   },
   getProfile: async (req, res) => {
     try {
-      const getData = await Model.User.findById(req.user._id);
+      const getData = await Model.User.findById(req.user._id).populate("active_address");
       if (!getData) {
         return errorRes(res, 404, "User not found");
       }
