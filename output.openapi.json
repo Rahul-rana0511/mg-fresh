@@ -1234,6 +1234,44 @@
         ]
       }
     },
+    "/api/user/updateCartQuantity": {
+      "put": {
+        "tags": [
+          "Core Functionality"
+        ],
+        "summary": "update cart products Api",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/updateCartQuantity"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Operation"
+          },
+          "400": {
+            "description": "Bad request - Invalid input, validation error"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication failure"
+          },
+          "500": {
+            "description": "Internal server error - Something went wrong on the server side"
+          }
+        },
+        "security": [
+          {
+            "access_token": [
+              "access_token"
+            ]
+          }
+        ]
+      }
+    },
     "/api/user/emptyCart": {
       "post": {
         "tags": [
@@ -1804,6 +1842,29 @@
           "active_address": {
             "type": "string",
             "description": "Enter bookingId"
+          }
+        }
+      },
+      "updateCartQuantity": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "Enter type",
+            "example": "increase, decrease"
+          },
+          "basketId": {
+            "type": "string",
+            "description": "Enter basketId"
+          },
+          "productId": {
+            "type": "string",
+            "description": "Enter productId"
+          },
+          "type": {
+            "type": "string",
+            "description": "Enter type",
+            "example": "individual basket"
           }
         }
       },

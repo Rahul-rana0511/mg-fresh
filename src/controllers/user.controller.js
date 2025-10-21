@@ -125,5 +125,8 @@ createProfile: async (req, res) => {
   updateActiveAddress: async (req, res) => {
     await userServices.updateActiveAddress(req, res);
   },
+  updateCartQuantity: async (req, res) => {
+    await userServices.updateCartQuantity(req, res);
+  },
 };
 export default userController;

@@ -604,68 +604,80 @@ const userServices = {
     }
   },
   updateCartQuantity: async (req, res) => {
-    try {
-      const userId = req.user._id;
-      const { type, basketId, productId, action } = req.body;
+  try {
+    const userId = req.user._id;
+    const { type, basketId, productId, action } = req.body;
 
-      if (!["increase", "decrease"].includes(action)) {
-        return errorRes(res, 400, "Invalid action type");
-      }
-
-      const cart = await Model.Cart.findOne({ userId });
-      if (!cart) return errorRes(res, 404, "Cart not found");
-
-      // Determine action (+1 or -1)
-      const change = action === "increase" ? 1 : -1;
-
-      if (type === "individual") {
-        // 🧴 Update individual product quantity
-        const product = cart.individualProducts.find(
-          (p) => p.productId.toString() === productId
-        );
-        if (!product) return errorRes(res, 404, "Product not found in cart");
-
-        product.quantity = Math.max(1, product.quantity + change);
-      } else if (type === "basket") {
-        // 🧺 Update basket quantity
-        const basket = cart.baskets.find(
-          (b) => b.basketId.toString() === basketId
-        );
-        if (!basket) return errorRes(res, 404, "Basket not found");
-
-        basket.quantity = Math.max(1, (basket.quantity || 1) + change);
-      } else if (type === "basketProduct") {
-        // 🧺🎯 Update product inside a basket
-        const basket = cart.baskets.find(
-          (b) => b.basketId.toString() === basketId
-        );
-        if (!basket) return errorRes(res, 404, "Basket not found");
-
-        const product = basket.products.find(
-          (p) => p.productId.toString() === productId
-        );
-        if (!product) return errorRes(res, 404, "Product not found in basket");
-
-        product.quantity = Math.max(1, product.quantity + change);
-      } else {
-        return errorRes(res, 400, "Invalid type");
-      }
-
-      await cart.save();
-
-      // Optionally, recalc total if needed
-      const { totalAmount, detailedItems } = calculateCartTotal(cart);
-
-      return successRes(res, 200, "Cart updated successfully", {
-        totalAmount,
-        cart,
-        detailedItems,
-      });
-    } catch (error) {
-      console.error("Error updating quantity:", error);
-      return errorRes(res, 500, error.message);
+    if (!["increase", "decrease"].includes(action)) {
+      return errorRes(res, 400, "Invalid action type");
     }
-  },
+
+    const cart = await Model.Cart.findOne({ userId });
+    if (!cart) return errorRes(res, 404, "Cart not found");
+
+    const change = action === "increase" ? 1 : -1;
+
+    if (type === "individual") {
+      const productIndex = cart.individualProducts.findIndex(
+        (p) => p.productId.toString() === productId
+      );
+      if (productIndex === -1) return errorRes(res, 404, "Product not found in cart");
+
+      const product = cart.individualProducts[productIndex];
+      product.quantity += change;
+
+      if (product.quantity <= 0) {
+        // Remove product if quantity is 0 or less
+        cart.individualProducts.splice(productIndex, 1);
+      }
+
+    } else if (type === "basket") {
+      const basketIndex = cart.baskets.findIndex((b) => b.basketId.toString() === basketId);
+      if (basketIndex === -1) return errorRes(res, 404, "Basket not found");
+
+      const basket = cart.baskets[basketIndex];
+      basket.quantity = (basket.quantity || 1) + change;
+
+      if (basket.quantity <= 0) {
+        cart.baskets.splice(basketIndex, 1); // remove basket
+      }
+
+    } else if (type === "basketProduct") {
+      const basket = cart.baskets.find((b) => b.basketId.toString() === basketId);
+      if (!basket) return errorRes(res, 404, "Basket not found");
+
+      const productIndex = basket.products.findIndex(
+        (p) => p.productId.toString() === productId
+      );
+      if (productIndex === -1) return errorRes(res, 404, "Product not found in basket");
+
+      const product = basket.products[productIndex];
+      product.quantity += change;
+
+      if (product.quantity <= 0) {
+        basket.products.splice(productIndex, 1); // remove product from basket
+      }
+
+    } else {
+      return errorRes(res, 400, "Invalid type");
+    }
+
+    await cart.save();
+
+    const { totalAmount, detailedItems } = calculateCartTotal(cart);
+
+    return successRes(res, 200, "Cart updated successfully", {
+      totalAmount,
+      cart,
+      detailedItems,
+    });
+
+  } catch (error) {
+    console.error("Error updating quantity:", error);
+    return errorRes(res, 500, error.message);
+  }
+}
+
 };
 
 const calculateCartTotal = (cart) => {
