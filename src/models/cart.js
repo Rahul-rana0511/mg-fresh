@@ -21,6 +21,10 @@ const cartSchema = new Schema(
           enum: ["predefined", "custom"],
           required: true,
         },
+          quantity: {
+          type: Number,
+          default: 1
+        },
         products: [
           {
             productId: {

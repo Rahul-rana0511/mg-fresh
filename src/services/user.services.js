@@ -65,91 +65,7 @@ const userServices = {
     }
   },
 
-  updateCartQuantity: async (req, res) => {
-  try {
-    const userId = req.user._id;
-    const { basketId, productId, action } = req.body;
-    // action: "increase" | "decrease"
 
-    if (!["increase", "decrease"].includes(action)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid action. Use 'increase' or 'decrease'.",
-      });
-    }
-
-    const cart = await Model.Cart.findOne({ userId });
-    if (!cart) {
-      return res.status(404).json({ success: false, message: "Cart not found" });
-    }
-
-    let updated = false;
-
-    // 🧺 Case 1: Update product inside a basket
-    if (basketId && productId) {
-      const basket = cart.baskets.find(
-        (b) => b.basketId.toString() === basketId.toString()
-      );
-      if (!basket) {
-        return res.status(404).json({ success: false, message: "Basket not found in cart" });
-      }
-
-      const product = basket.products.find(
-        (p) => p.productId.toString() === productId.toString()
-      );
-      if (!product) {
-        return res.status(404).json({ success: false, message: "Product not found in basket" });
-      }
-
-      if (action === "increase") {
-        product.quantity += 1;
-      } else {
-        product.quantity = Math.max(1, product.quantity - 1);
-      }
-
-      updated = true;
-    }
-
-    // 🍎 Case 2: Update individual product quantity
-    else if (productId && !basketId) {
-      const product = cart.individualProducts.find(
-        (p) => p.productId.toString() === productId.toString()
-      );
-      if (!product) {
-        return res.status(404).json({ success: false, message: "Product not found in cart" });
-      }
-
-      if (action === "increase") {
-        product.quantity += 1;
-      } else {
-        // remove if quantity becomes 0
-        product.quantity -= 1;
-        if (product.quantity <= 0) {
-          cart.individualProducts = cart.individualProducts.filter(
-            (p) => p.productId.toString() !== productId.toString()
-          );
-        }
-      }
-
-      updated = true;
-    }
-
-    if (!updated) {
-      return res.status(400).json({ success: false, message: "Invalid update request" });
-    }
-
-    await cart.save();
-
-    return res.status(200).json({
-      success: true,
-      message: "Cart updated successfully",
-      cart,
-    });
-  } catch (error) {
-    console.error("Update Cart Error:", error);
-    return res.status(500).json({ success: false, message: error.message });
-  }
-},
 
   createAddress: async (req, res) => {
     try {
@@ -364,10 +280,19 @@ const userServices = {
       }
 
       for (const basket of cart.baskets) {
-        for (const item of basket.products) {
-          totalAmount += item.productId.product_price * item.quantity;
+      if (!basket.products?.length) continue;
+
+      let basketTotal = 0;
+
+      for (const item of basket.products) {
+        if (item.productId && item.productId.product_price) {
+          basketTotal += item.productId.product_price * item.quantity;
         }
       }
+
+      // 👇 multiply by basket.quantity
+      totalAmount += basketTotal * (basket.quantity || 1);
+    }
 
       const amountInPaise = totalAmount * 100;
 
@@ -660,9 +585,79 @@ const userServices = {
   } catch (error) {
     console.error("Buy Again Error:", error);
     return errorRes(res, 500, error.message);
-    return res.status(500).json({ message: "Server error" });
+   
   }
 },
+updateCartQuantity: async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { type, basketId, productId, action } = req.body;
+
+    if (!["increase", "decrease"].includes(action)) {
+      return errorRes(res, 400, "Invalid action type");
+    }
+
+    const cart = await Model.Cart.findOne({ userId });
+    if (!cart) return errorRes(res, 404, "Cart not found");
+
+    // Determine action (+1 or -1)
+    const change = action === "increase" ? 1 : -1;
+
+    if (type === "individual") {
+      // 🧴 Update individual product quantity
+      const product = cart.individualProducts.find(
+        (p) => p.productId.toString() === productId
+      );
+      if (!product) return errorRes(res, 404, "Product not found in cart");
+
+      product.quantity = Math.max(1, product.quantity + change);
+    }
+
+    else if (type === "basket") {
+      // 🧺 Update basket quantity
+      const basket = cart.baskets.find(
+        (b) => b.basketId.toString() === basketId
+      );
+      if (!basket) return errorRes(res, 404, "Basket not found");
+
+      basket.quantity = Math.max(1, (basket.quantity || 1) + change);
+    }
+
+    else if (type === "basketProduct") {
+      // 🧺🎯 Update product inside a basket
+      const basket = cart.baskets.find(
+        (b) => b.basketId.toString() === basketId
+      );
+      if (!basket) return errorRes(res, 404, "Basket not found");
+
+      const product = basket.products.find(
+        (p) => p.productId.toString() === productId
+      );
+      if (!product) return errorRes(res, 404, "Product not found in basket");
+
+      product.quantity = Math.max(1, product.quantity + change);
+    }
+
+    else {
+      return errorRes(res, 400, "Invalid type");
+    }
+
+    await cart.save();
+
+    // Optionally, recalc total if needed
+    const { totalAmount, detailedItems } = calculateCartTotal(cart);
+
+    return successRes(res, 200, "Cart updated successfully", {
+      totalAmount,
+      cart,
+      detailedItems,
+    });
+  } catch (error) {
+    console.error("Error updating quantity:", error);
+    return errorRes(res, 500, error.message);
+  }
+},
+
 
 };
 
@@ -670,7 +665,7 @@ const calculateCartTotal = (cart) => {
   let totalAmount = 0;
   const detailedItems = [];
 
-  // Calculate individual products total
+  // 🧮 Calculate individual products total
   if (cart.individualProducts && cart.individualProducts.length > 0) {
     for (const item of cart.individualProducts) {
       if (item.productId && item.productId.product_price) {
@@ -682,14 +677,14 @@ const calculateCartTotal = (cart) => {
           productId: item.productId._id,
           name: item.productId.product_name,
           quantity: item.quantity,
-          price: item.productId.price,
+          price: item.productId.product_price,
           total: itemTotal,
         });
       }
     }
   }
 
-  // Calculate baskets total
+  // 🧺 Calculate baskets total (includes basket quantity)
   if (cart.baskets && cart.baskets.length > 0) {
     for (const basket of cart.baskets) {
       let basketTotal = 0;
@@ -712,15 +707,21 @@ const calculateCartTotal = (cart) => {
         }
       }
 
-      totalAmount += basketTotal;
+      // 👇 Multiply basket total by basket.quantity
+      const basketQuantity = basket.quantity || 1;
+      const basketFinalTotal = basketTotal * basketQuantity;
+
+      totalAmount += basketFinalTotal;
 
       detailedItems.push({
         type: "basket",
         basketId: basket.basketId?._id,
         basketName: basket.basketId?.product_name,
         basketType: basket.type,
+        quantity: basketQuantity,
         items: basketItems,
-        total: basketTotal,
+        totalPerBasket: basketTotal,
+        total: basketFinalTotal,
       });
     }
   }
@@ -731,4 +732,5 @@ const calculateCartTotal = (cart) => {
     detailedItems,
   };
 };
+
 export default userServices;
