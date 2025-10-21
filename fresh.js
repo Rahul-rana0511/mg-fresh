@@ -42,6 +42,19 @@ app.use("/docs", swagger_ui.serve, swagger_ui.setup(openapi_docs, {
   title: `Mg fresh Documentation`
 }));
 
+import crypto from "crypto";
+
+const order_id = "order_RW6XbLTBRRdaYi"; // from step 1
+const payment_id = "pay_test123";        // any fake string (for testing)
+const secret = "rzp_test_h3VnsohN5itzcD"; // from your .env
+
+const signature = crypto
+  .createHmac("sha256", secret)
+  .update(`${order_id}|${payment_id}`)
+  .digest("hex");
+
+console.log("✅ Generated Signature:", signature, process.env.RAZORPAY_KEY_SECRET);
+
 // ✅ Start Server
 app.listen(PORT, () => {
   console.log(`🚀 Server listening on port ${PORT}`);
