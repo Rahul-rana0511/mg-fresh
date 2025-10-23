@@ -488,7 +488,8 @@ const userServices = {
         .sort({ createdAt: -1 })
         .populate("baskets.products.productId")
         .populate("baskets.basketId")
-        .populate("individualProducts.productId");
+        .populate("individualProducts.productId")
+        .populate("shippingAddress");
 
       return successRes(res, 200, "Cart data", orders);
     } catch (err) {
@@ -501,7 +502,8 @@ const userServices = {
       const orderDetails = await Model.Order.findById(req.query.orderId)
         .populate("baskets.products.productId")
         .populate("baskets.basketId")
-        .populate("individualProducts.productId");
+        .populate("individualProducts.productId")
+        .populate("shippingAddress");
 
       return successRes(res, 200, "Cart data", orderDetails);
     } catch (err) {
@@ -515,7 +517,8 @@ const userServices = {
         .sort({ createdAt: -1 })
         .populate("baskets.products.productId")
         .populate("baskets.basketId")
-        .populate("individualProducts.productId");
+        .populate("individualProducts.productId")
+        .populate("shippingAddress");
 
       return successRes(res, 200, "Cart data", orderDetails);
     } catch (err) {
