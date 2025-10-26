@@ -2613,7 +2613,7 @@
           "explode": true
         },
          "promoId": {
-          "name": "productId",
+          "name": "promoId",
           "in": "path",
           "required": false,
           "schema": {
