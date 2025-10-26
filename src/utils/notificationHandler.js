@@ -1,7 +1,10 @@
 import "dotenv/config";
 import * as Model from "../models/index.js";
 import firebase from "firebase-admin";
-import {newBooking, completeBooking, cancelBooking, vehicleAdded, newMessage} from "./pushNotificationData.js";
+import {orderBooked,
+    orderShipped,
+    orderOutOfDelivery,
+    orderDelivered,} from "./pushNotification.js";
 import {serviceAccount} from "../../car_bike_firebase.js";
 firebase.initializeApp({
   credential: firebase.credential.cert(serviceAccount),
@@ -52,36 +55,22 @@ const pushNotification = async ({
     let desc = "";
 
     switch (type) {
-      case "newMessage":
-        ({ title, desc, type } = newMessage(
-          user?.first_name,
-        ));
+      case "orderBooked":
+        ({ title, desc, type } = orderBooked(user?.first_name));
         break;
-      case "vehicleAdded":
-        ({ title, desc, type } = vehicleAdded(user?.first_name));
+      case "orderShipped":
+        ({ title, desc, type } = orderShipped(user?.name));
         break;
-      case "connectRequest":
-        ({ title, desc, type } = connectRequest(user?.name));
+      case "orderDelivered":
+        ({ title, desc, type } = orderDelivered(user?.name));
         break;
-      case "requestAccept":
-        ({ title, desc, type } = requestAccept(user?.name));
-        break;
-      case "rejectRequest":
-        ({ title, desc, type } = rejectRequest(user?.name));
-        break;
-      case "postLiked":
-        ({ title, desc, type } = postLiked(user?.name, misc?.caption));
-        break;
-      case "commentPost":
-        ({ title, desc, type } = commentPost(user?.name, misc?.comment));
-        break;
-      case "eventJoined":
-        ({ title, desc, type } = eventJoined(user?.name));
+      case "orderOutOfDelivery":
+        ({ title, desc, type } = orderOutOfDelivery(user?.name));
         break;
       default:
         break;
     }
-    if (type != 5) {
+    // if (type != 5) {
       await Model.Notification.create({
         user_id,
         other_user,
@@ -91,7 +80,7 @@ const pushNotification = async ({
         notification_type: type,
         redirectId: misc?.redirectId,
       });
-    }
+    // }
 
     // if (sendNotificationTo?.is_enable_notification == 1) {
       const notification = {

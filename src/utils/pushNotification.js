@@ -1,44 +1,37 @@
 
-const newBooking = (name, date, time) => {
+const orderBooked = (name, date, time) => {
     return {
       type: 1,
-      title: `New Booking Alert`,
-      desc: `${name} has booked a slot on ${date}`,
+      title: `Order Placed`,
+      desc: `Hi ${name}, your order has been placed`,
     };
   };
-  const cancelBooking = (name, date, time) => {
+  const orderShipped = (name, date, time) => {
     return {
       type: 2,
-      title: `Cancel Booking Alert`,
-      desc: `${name} has cancelled your booking`,
+      title: `Order Shipped`,
+      desc: `Hi ${name} your order has been placed`,
     };
   };
-  const completeBooking = (name, date, time) => {
+  const orderOutOfDelivery = (name, date, time) => {
     return {
       type: 3,
-      title: `Complete Booking Alert`,
-      desc: `${name} has completed your booking`,
+      title: `Order Out Of Delivery`,
+      desc: `Hi ${name}, your order has been Out of Delivery`,
     };
   };
-  const vehicleAdded = (name, date, time) => {
+  const orderDelivered = (name, date, time) => {
     return {
        type: 4,
-      title: `New vehicle alert`,
-      desc: `${name} added a new vehcile to sell`,
-    };
-  };
-  const newMessage = (name) => {
-    return {
-      type: 5,
-      title: `${name}`,
-      desc: `${name} sent you a new message`,
+      title: `Order Delivered`,
+      desc: `Hi ${name}, your order has been deliverd`,
     };
   };
 export  {
-  newBooking,
-    completeBooking,
-    cancelBooking,
-    vehicleAdded,
-    newMessage
+  orderBooked,
+    orderShipped,
+    orderOutOfDelivery,
+    orderDelivered,
+
 }
  
