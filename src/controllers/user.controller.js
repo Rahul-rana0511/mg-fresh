@@ -68,6 +68,24 @@ createProfile: async (req, res) => {
     createAddress: async (req, res) => {
     await userServices.createAddress(req, res);
   },
+   getPromoDetails: async (req, res) => {
+    await adminServices.getPromoDetails(req, res);
+  },
+   getPromocodes: async (req, res) => {
+    await adminServices.getPromocodes(req, res);
+  },
+   delPromocode: async (req, res) => {
+    await adminServices.delPromocode(req, res);
+  },
+   updatePromocode: async (req, res) => {
+    await adminServices.updatePromocode(req, res);
+  },
+   addPromocode: async (req, res) => {
+    await adminServices.addPromocode(req, res);
+  },
+  applyPromocode: async (req, res) => {
+    await userServices.applyPromocode(req, res);
+  },
    getAddresses: async (req, res) => {
     await userServices.getAddresses(req, res);
   },

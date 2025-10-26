@@ -157,6 +157,81 @@ const adminServices = {
       return errorRes(res, 500, err.message);
     }
   },
+
+   addPromocode: async (req, res) => {
+    try {
+      const addData = await Model.PromoCode.create({
+        ...req.body
+      });
+     
+      return successRes(res, 200, "Promo code added successfully", addData);
+    } catch (err) {
+      return errorRes(res, 500, err.message);
+    }
+  },
+    updatePromocode: async (req, res) => {
+    try {
+      const updateData = await Model.PromoCode.findByIdAndUpdate(
+        req.body.promoId,
+        { $set: { ...req.body } },
+        { new: true }
+      );
+      if (!updateData) {
+        return errorRes(res, 404, "Promo details not found");
+      }
+      return successRes(
+        res,
+        200,
+        "Promo code updated successfully",
+        updateData
+      );
+    } catch (err) {
+      return errorRes(res, 500, err.message);
+    }
+  },
+ delPromocode: async (req, res) => {
+    try {
+      const delData = await Model.PromoCode.findByIdAndDelete(req.params.promoId);
+     if(!delData){
+        return errorRes(res, 404, "Promo details not found")
+     }
+      return successRes(res, 200, "Promo code deleted successfully", delData);
+    } catch (err) {
+      return errorRes(res, 500, err.message);
+    }
+  },
+  getPromocodes: async (req, res) => {
+    try {
+      const allBasktets = await Model.PromoCode.find({}).sort({
+        createdAt: -1,
+      });
+      return successRes(
+        res,
+        200,
+        "Promo code list fetched successfully",
+        allBasktets
+      );
+    } catch (err) {
+      return errorRes(res, 500, err.message);
+    }
+  },
+  getPromoDetails: async (req, res) => {
+    try {
+      const { promoId } = req.params;
+      const promoDetails = await Model.PromoCode.findById(promoId);
+      if (!promoDetails) {
+        return errorRes(res, 404, "Promo details not found");
+      }
+      return successRes(
+        res,
+        200,
+        "Promo details fetched successfully",
+        promoDetails
+      );
+    } catch (err) {
+      return errorRes(res, 500, err.message);
+    }
+  },
 }
 
 export default adminServices;

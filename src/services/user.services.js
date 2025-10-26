@@ -283,7 +283,8 @@ const userServices = {
       });
       const cart = await Model.Cart.findOne({ userId })
         .populate("baskets.products.productId")
-        .populate("individualProducts.productId");
+        .populate("individualProducts.productId")
+          .populate("promoId");
 
       if (!cart) {
         return errorRes(res, 404, "Cart not found");
@@ -314,8 +315,19 @@ const userServices = {
         // 👇 multiply by basket.quantity
         totalAmount += basketTotal * (basket.quantity || 1);
       }
+    // 💸 Apply promocode discount (if exists)
+    let promoDiscount = 0;
+    let finalAmount = totalAmount;
 
-      const amountInPaise = totalAmount * 100;
+    if (cart.promoId) {
+      const promo = cart.promoId;
+     promoDiscount = (totalAmount * promo.value) / 100;
+        finalAmount = totalAmount - promoDiscount;
+      }
+    
+
+    const amountInPaise = Math.round(finalAmount * 100);
+      // const amountInPaise = totalAmount * 100;
 
       const razorpayOrder = await razorpay.orders.create({
         amount: amountInPaise,
@@ -357,7 +369,7 @@ const userServices = {
 
       // 2. Get user's cart
       const cart = await Model.Cart.findOne({ userId }).populate("individualProducts.productId")
-      .populate("baskets.products.productId");
+      .populate("baskets.products.productId").populate("promoId");
 
       if (!cart || (!cart.individualProducts.length && !cart.baskets.length)) {
         return errorRes(res, 400, "Cart is empty or invalid");
@@ -406,12 +418,32 @@ const userServices = {
       totalQuantity += basketItemsQuantity * multiplier;
     }
 
+
+     // 4. Apply promo if exists
+    let promoDiscount = 0;
+    let finalAmount = totalAmount;
+
+    if (cart.promoId) {
+      const promo = cart.promoId;
+
+     
+        promoDiscount = (totalAmount * promo.value) / 100;
+      finalAmount = totalAmount - promoDiscount;
+
+      // ✅ Optionally mark promo as used
+      promo.usedBy.push(userId);
+      promo.usedCount += 1;
+      await promo.save();
+    }
+
       // 4. Create order in DB
       const order = await Model.Order.create({
         userId,
         baskets: cart.baskets,
         individualProducts: cart.individualProducts,
-        totalAmount,
+        totalAmount: finalAmount,
+        discount: promoDiscount,
+        amount: totalAmount, 
         totalQuantity,
         paymentStatus: "paid",
         paymentMethod: paymentMethod || "card",
@@ -476,7 +508,8 @@ const userServices = {
       const cart = await Model.Cart.findOne({ userId })
         .populate("baskets.products.productId")
         .populate("baskets.basketId")
-        .populate("individualProducts.productId");
+        .populate("individualProducts.productId")
+        .populate("promoId");
       console.log(cart, "cart");
       if (!cart) {
         return res.status(200).json({
@@ -488,7 +521,17 @@ const userServices = {
       }
 
       const { totalAmount, detailedItems } = await calculateCartTotal(cart);
-
+      let promoDis = 0;
+      let amount = totalAmount;
+       if (cart.promoId) {
+  const promo = cart.promoId;
+  // promoDis = promo.type === "percentage"
+  //   ? (totalAmount * promo.value) / 100
+  //   : promo.value;
+   promoDis = (totalAmount * promo.value) / 100
+    
+  totalAmount -= promoDis;
+}
       let data = {
         individualProducts: cart.individualProducts.map((item) => ({
           productId: item.productId._id,
@@ -509,7 +552,8 @@ const userServices = {
             price: item.productId.price,
           })),
         })),
-
+amount,
+promoDis,
         totalAmount,
         detailedItems, // optional: for displaying itemized summary
       };
@@ -517,6 +561,48 @@ const userServices = {
     } catch (err) {
       console.error("Failed to get cart items:", err);
       res.status(500).json({ message: "Internal server error" });
+    }
+  },
+   applyPromocode: async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const {promoId} = req.body;
+      const promoData = await Model.PromoCode.findById(promoId);
+      if(!promoData){
+        return errorRes(res, 404, "Promo not found")
+      }
+      if (promoData.status !== "active") {
+  return errorRes(res, 400, "This promo code is not active");
+}
+
+      const alreadyUsed = promoData?.usedBy?.map(user => user?.toString());
+      if(alreadyUsed.includes(userId.toString())){
+        return errorRes(res, 400, "You already used this promocode")
+      }
+      const cart = await Model.Cart.findOne({ userId })
+        .populate("baskets.products.productId")
+        .populate("baskets.basketId")
+        .populate("individualProducts.productId");
+      console.log(cart, "cart");
+      if (!cart) {
+        return res.status(200).json({
+          individualProducts: [],
+          baskets: [],
+          totalAmount: 0,
+          detailedItems: [],
+        });
+      }
+
+      const { totalAmount, detailedItems } = await calculateCartTotal(cart);
+      if(totalAmount < promoData.minOrderValue){
+        return errorRes(res, 400, "Please buy more items to apply this promocode")
+      }
+      cart.promoId = promoId;
+      await cart.save();
+      return successRes(res, 200, "Promo code added successfully");
+    } catch (err) {
+      console.error("Failed to get cart items:", err);
+    return  res.status(500).json({ message: "Internal server error" });
     }
   },
   chooseAddress: async (req, res) => {

@@ -84,6 +84,11 @@ const cartSchema = new Schema(
       ref: "Address",
       default: null
     },
+    promoId:{
+       type: Schema.Types.ObjectId,
+      ref: "PromoCode",
+      default: null 
+    }
   },
   { timestamps: true }
 );

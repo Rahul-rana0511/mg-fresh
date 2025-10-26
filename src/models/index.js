@@ -4,11 +4,13 @@ import Basket from "./baskets.js";
 import Cart from "./cart.js";
 import Order from "./orders.js";
 import Address from "./address.js";
+import PromoCode from "./promocode.js";
 export{
     User,
     Product,
     Basket,
     Cart,
     Order,
-    Address
+    Address,
+    PromoCode
 }

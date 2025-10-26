@@ -76,8 +76,15 @@ const orderSchema = new Schema(
 
     totalAmount: {
       type: Number,
-      required: true,
-      min: 0,
+      default: 0
+    },
+    amount: {
+      type: Number,
+      default: 0
+    },
+    discount: {
+      type: Number,
+      default: 0
     },
     totalQuantity:{
       type: Number

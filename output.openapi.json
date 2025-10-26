@@ -485,6 +485,217 @@
         ]
       }
     },
+    "/api/user/addPromocode": {
+      "post": {
+        "tags": [
+          "Admin Flow"
+        ],
+        "summary": "Add Promo code Api",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/addPromocode"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Operation"
+          },
+          "400": {
+            "description": "Bad request - Invalid input, validation error"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication failure"
+          },
+          "500": {
+            "description": "Internal server error - Something went wrong on the server side"
+          }
+        },
+        "security": [
+          {
+            "access_token": [
+              "access_token"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/user/updatePromocode": {
+      "put": {
+        "tags": [
+          "Admin Flow"
+        ],
+        "summary": "update promocode Api",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/updatePromocode"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Operation"
+          },
+          "400": {
+            "description": "Bad request - Invalid input, validation error"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication failure"
+          },
+          "500": {
+            "description": "Internal server error - Something went wrong on the server side"
+          }
+        },
+        "security": [
+          {
+            "access_token": [
+              "access_token"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/user/delPromocode/{promoId}": {
+      "delete": {
+        "tags": [
+          "Admin Flow"
+        ],
+        "summary": "delete product Api",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/promoId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Operation"
+          },
+          "400": {
+            "description": "Bad request - Invalid input, validation error"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication failure"
+          },
+          "500": {
+            "description": "Internal server error - Something went wrong on the server side"
+          }
+        },
+        "security": [
+          {
+            "access_token": [
+              "access_token"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/user/getPromoDetails/{promoId}": {
+      "get": {
+        "tags": [
+          "Admin Flow"
+        ],
+        "summary": "Get promo details Api",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/promoId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Operation"
+          },
+          "400": {
+            "description": "Bad request - Invalid input, validation error"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication failure"
+          },
+          "500": {
+            "description": "Internal server error - Something went wrong on the server side"
+          }
+        },
+        "security": [
+          {
+            "access_token": [
+              "access_token"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/user/getPromocodes": {
+      "get": {
+        "tags": [
+          "Admin Flow"
+        ],
+        "summary": "Get product list Api",
+        "responses": {
+          "200": {
+            "description": "Successful Operation"
+          },
+          "400": {
+            "description": "Bad request - Invalid input, validation error"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication failure"
+          },
+          "500": {
+            "description": "Internal server error - Something went wrong on the server side"
+          }
+        },
+        "security": [
+          {
+            "access_token": [
+              "access_token"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/user/applyPromocode": {
+      "post": {
+        "tags": [
+          "Admin Flow"
+        ],
+        "summary": "apply Promo code Api",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/applyPromocode"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Operation"
+          },
+          "400": {
+            "description": "Bad request - Invalid input, validation error"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication failure"
+          },
+          "500": {
+            "description": "Internal server error - Something went wrong on the server side"
+          }
+        },
+        "security": [
+          {
+            "access_token": [
+              "access_token"
+            ]
+          }
+        ]
+      }
+    },
     "/api/user/addBasket": {
       "post": {
         "tags": [
@@ -1549,6 +1760,73 @@
           }
         }
       },
+      "addPromocode": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Enter product_name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Enter product_type"
+          },
+          "value": {
+            "type": "number",
+            "description": "Enter product_image",
+            "example": "10"
+          },
+          "minOrderValue": {
+            "type": "number",
+            "description": "Enter product_desc"
+          },
+          "status": {
+            "type": "string",
+            "description": "Enter status",
+            "example": "active inactive expired"
+          }
+        }
+      },
+      "applyPromocode": {
+        "type": "object",
+        "properties": {
+          "promoId": {
+            "type": "string",
+            "description": "Enter promoId"
+          }
+        }
+      },
+      "updatePromocode": {
+        "type": "object",
+        "properties": {
+          "promoId": {
+            "type": "string",
+            "description": "Enter product_name"
+          },
+          "code": {
+            "type": "string",
+            "description": "Enter product_name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Enter product_type"
+          },
+          "value": {
+            "type": "number",
+            "description": "Enter product_image",
+            "example": "10"
+          },
+          "minOrderValue": {
+            "type": "number",
+            "description": "Enter product_desc"
+          },
+          "status": {
+            "type": "string",
+            "description": "Enter status",
+            "example": "active inactive expired"
+          }
+        }
+      },
       "updateProduct": {
         "type": "object",
         "properties": {
@@ -1757,6 +2035,10 @@
           "productId": {
             "type": "string",
             "description": "Enter productId"
+          },
+          "note": {
+            "type": "string",
+            "description": "Enter note"
           },
           "quantity": {
             "type": "string",
@@ -2363,6 +2645,16 @@
         "explode": true
       },
       "productId": {
+        "name": "productId",
+        "in": "path",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "style": "form",
+        "explode": true
+      },
+      "promoId": {
         "name": "productId",
         "in": "path",
         "required": false,

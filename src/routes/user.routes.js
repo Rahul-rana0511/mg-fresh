@@ -40,6 +40,16 @@ router.route("/getAddressById/:addressId").get(userController.getAddressById);
 router.route("/delAddress/:addressId").delete(userController.delAddress);
 router.route("/updateAddress/:addressId").put(validations.validateUpdateAddress, userController.updateAddress);
 
+//Add Address flow
+router.route("/addPromocode").post(userController.addPromocode);
+router.route("/getPromocodes").get(userController.getPromocodes);
+router.route("/getPromoDetails/:promoId").get(userController.getPromoDetails);
+router.route("/delPromocode/:promoId").delete(userController.delPromocode);
+router.route("/updatePromocode").put(userController.updatePromocode);
+router.route("/updatePromocode").put(userController.updatePromocode);
+router.route("/applyPromocode").post(userController.applyPromocode);
+
+
 //Home & Cart Flow
 router.route("/homeScreen").get(userController.homeScreen);
 router.route("/buyNow").get(userController.buyNow);
