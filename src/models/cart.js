@@ -25,6 +25,10 @@ const cartSchema = new Schema(
           type: Number,
           default: 1
         },
+         note:{
+          type: String,
+          default: null
+        },
         products: [
           {
             productId: {
@@ -69,6 +73,10 @@ const cartSchema = new Schema(
           default: 1,
           min: 1,
         },
+        note:{
+          type: String,
+          default: null
+        }
       },
     ],
     selectedAddress: {

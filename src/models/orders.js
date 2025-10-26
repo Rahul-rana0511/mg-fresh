@@ -21,6 +21,10 @@ const orderSchema = new Schema(
           enum: ["predefined", "custom"],
           required: true,
         },
+         note:{
+          type: String,
+          default: null
+        },
         name: {
           type: String,
           default: null,
@@ -37,6 +41,7 @@ const orderSchema = new Schema(
               default: 1,
               min: 1,
             },
+            
           },
         ],
       },
@@ -55,6 +60,10 @@ const orderSchema = new Schema(
           default: 1,
           min: 1,
         },
+         note:{
+          type: String,
+          default: null
+        },
       },
     ],
 
@@ -70,7 +79,9 @@ const orderSchema = new Schema(
       required: true,
       min: 0,
     },
-
+    totalQuantity:{
+      type: Number
+    },
     paymentStatus: {
       type: String,
       enum: ["unpaid", "paid", "failed", "refunded"],

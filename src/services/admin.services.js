@@ -101,6 +101,10 @@ const adminServices = {
   },
   addBasket: async (req, res) => {
     try {
+      const noOfBasket = await Model.Basket.find({box_type: req.body.box_type});
+      if(noOfBasket.length > 4){
+        return errorRes(res, 400, "Only 4 basket is allowed")
+      }
       const addData = await Model.Basket.create({
         ...req.body
       });

@@ -7,7 +7,7 @@ const userServices = {
   addInCart: async (req, res) => {
     try {
       const userId = req.user._id;
-      const { basketId, products, productId, quantity, replacements } =
+      const { basketId, products, productId, quantity, replacements, note } =
         req.body;
 
       let cart = await Model.Cart.findOne({ userId });
@@ -40,6 +40,7 @@ const userServices = {
           basketId,
           type: basketType,
           products: products || [],
+          note,
           replacements: basketType === "predefined" ? replacements || [] : [],
         });
       } else {
@@ -54,6 +55,7 @@ const userServices = {
           cart.individualProducts.push({
             productId,
             quantity: quantity || 1,
+            note
           });
         }
       }
@@ -354,7 +356,8 @@ const userServices = {
       // }
 
       // 2. Get user's cart
-      const cart = await Model.Cart.findOne({ userId });
+      const cart = await Model.Cart.findOne({ userId }).populate("individualProducts.productId")
+      .populate("baskets.products.productId");
 
       if (!cart || (!cart.individualProducts.length && !cart.baskets.length)) {
         return errorRes(res, 400, "Cart is empty or invalid");
@@ -362,18 +365,46 @@ const userServices = {
 
       // 3. Calculate total again (double-check)
       let totalAmount = 0;
+      let totalQuantity = 0;
+      // for (const item of cart.individualProducts) {
+      //   const product = await Model.Product.findById(item.productId);
+      //   totalAmount += product.product_price * item.quantity;
+      //       totalQuantity += item.quantity;
+      // }
 
-      for (const item of cart.individualProducts) {
-        const product = await Model.Product.findById(item.productId);
-        totalAmount += product.product_price * item.quantity;
+
+       // Individual products
+    for (const item of cart.individualProducts) {
+      const price = item.productId?.product_price ?? 0;
+      const qty = item.quantity || 0;
+      totalAmount += price * qty;
+      totalQuantity += qty;
+    }
+      // for (const basket of cart.baskets) {
+      //   for (const item of basket.products) {
+      //     const product = await Model.Product.findById(item.productId);
+      //     totalAmount += product.product_price * item.quantity;
+      //     totalQuantity += item.quantity;
+      //   }
+      // }
+
+         for (const basket of cart.baskets) {
+      if (!basket.products?.length) continue;
+
+      let basketTotal = 0;
+      let basketItemsQuantity = 0;
+
+      for (const item of basket.products) {
+        const price = item.productId?.product_price ?? 0;
+        const qty = item.quantity || 0;
+        basketTotal += price * qty;
+        basketItemsQuantity += qty;
       }
 
-      for (const basket of cart.baskets) {
-        for (const item of basket.products) {
-          const product = await Model.Product.findById(item.productId);
-          totalAmount += product.product_price * item.quantity;
-        }
-      }
+      const multiplier = basket.quantity || 1;
+      totalAmount += basketTotal * multiplier;
+      totalQuantity += basketItemsQuantity * multiplier;
+    }
 
       // 4. Create order in DB
       const order = await Model.Order.create({
@@ -381,26 +412,48 @@ const userServices = {
         baskets: cart.baskets,
         individualProducts: cart.individualProducts,
         totalAmount,
+        totalQuantity,
         paymentStatus: "paid",
         paymentMethod: paymentMethod || "card",
         shippingAddress: cart?.selectedAddress,
       });
 
       // 5. Decrement product stock
-      for (const item of cart.individualProducts) {
+      // for (const item of cart.individualProducts) {
+      //   await Model.Product.findByIdAndUpdate(item.productId, {
+      //     $inc: { stock: -item.quantity },
+      //   });
+      // }
+
+          for (const item of cart.individualProducts) {
+      const qty = item.quantity || 0;
+      if (qty > 0) {
         await Model.Product.findByIdAndUpdate(item.productId, {
-          $inc: { stock: -item.quantity },
+          $inc: { stock: -qty },
         });
       }
+    }
 
-      for (const basket of cart.baskets) {
-        for (const item of basket.products) {
+
+      // for (const basket of cart.baskets) {
+      //   for (const item of basket.products) {
+      //     await Model.Product.findByIdAndUpdate(item.productId, {
+      //       $inc: { stock: -item.quantity },
+      //     });
+      //   }
+      // }
+
+          for (const basket of cart.baskets) {
+      const multiplier = basket.quantity || 1;
+      for (const item of basket.products) {
+        const qty = (item.quantity || 0) * multiplier;
+        if (qty > 0) {
           await Model.Product.findByIdAndUpdate(item.productId, {
-            $inc: { stock: -item.quantity },
+            $inc: { stock: -qty },
           });
         }
       }
-
+    }
       // 6. Clear cart
       cart.individualProducts = [];
       cart.baskets = [];
@@ -448,6 +501,7 @@ const userServices = {
           basketId: basket.basketId._id,
           name: basket.basketId.product_name,
           type: basket.type,
+          quantity: basket.quantity,
           products: basket.products.map((item) => ({
             productId: item.productId._id,
             name: item.productId.product_name,
