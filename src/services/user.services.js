@@ -520,11 +520,11 @@ const userServices = {
         });
       }
 
-      const { totalAmount, detailedItems } = await calculateCartTotal(cart);
+      let { totalAmount, detailedItems } = await calculateCartTotal(cart);
       let promoDis = 0;
       let amount = totalAmount;
-       if (cart.promoId) {
-  const promo = cart.promoId;
+       if (cart?.promoId) {
+  const promo = cart?.promoId;
   // promoDis = promo.type === "percentage"
   //   ? (totalAmount * promo.value) / 100
   //   : promo.value;
@@ -537,7 +537,8 @@ const userServices = {
           productId: item.productId._id,
           name: item.productId.product_name,
           quantity: item.quantity,
-          price: item.productId.price,
+          price: item.productId.product_price,
+          note: item?.note
         })),
 
         baskets: cart.baskets.map((basket) => ({
@@ -545,11 +546,12 @@ const userServices = {
           name: basket.basketId.product_name,
           type: basket.type,
           quantity: basket.quantity,
+          note: basket?.note,
           products: basket.products.map((item) => ({
             productId: item.productId._id,
             name: item.productId.product_name,
             quantity: item.quantity,
-            price: item.productId.price,
+            price: item.productId.product_price,
           })),
         })),
 amount,
