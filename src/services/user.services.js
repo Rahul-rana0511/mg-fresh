@@ -849,7 +849,7 @@ removeCartItem: async (req, res) => {
     // ---- Case 2: Remove a full basket ----
     else if (type === "basket") {
       const basketIndex = cart.baskets.findIndex(
-        (b) => b.basketId.toString() === basketId
+        (b) => b.basketId?._id?.toString() === basketId
       );
 
       if (basketIndex === -1) return errorRes(res, 404, "Basket not found");
@@ -860,7 +860,7 @@ removeCartItem: async (req, res) => {
     // ---- Case 3: Remove a product inside a basket ----
     else if (type === "basketProduct") {
       const basket = cart.baskets.find(
-        (b) => b.basketId.toString() === basketId
+        (b) => b.basketId?._id?.toString() === basketId
       );
       if (!basket) return errorRes(res, 404, "Basket not found");
 
@@ -874,7 +874,7 @@ removeCartItem: async (req, res) => {
       }
 
       const productIndex = basket.products.findIndex(
-        (p) => p.productId.toString() === productId
+        (p) => p.productId?._id.toString() === productId
       );
       if (productIndex === -1)
         return errorRes(res, 404, "Product not found in basket");
