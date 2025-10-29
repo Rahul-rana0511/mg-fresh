@@ -837,7 +837,7 @@ removeCartItem: async (req, res) => {
     // ---- Case 1: Remove an individual product ----
     if (type === "individual") {
       const productIndex = cart.individualProducts.findIndex(
-        (p) => p.productId.toString() === productId
+        (p) => p.productId?._id.toString() === productId
       );
 
       if (productIndex === -1)
