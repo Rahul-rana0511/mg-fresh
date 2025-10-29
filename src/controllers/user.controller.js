@@ -146,5 +146,8 @@ createProfile: async (req, res) => {
   updateCartQuantity: async (req, res) => {
     await userServices.updateCartQuantity(req, res);
   },
+  removeCartItem: async (req, res) => {
+    await userServices.removeCartItem(req, res);
+  },
 };
 export default userController;

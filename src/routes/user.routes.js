@@ -68,6 +68,8 @@ router.route("/buyAgain").get(userController.buyAgain);
 router.route("/chooseAddress").post(userController.chooseAddress);
 router.route("/updateActiveAddress").put(userController.updateActiveAddress);
 router.route("/updateCartQuantity").put(userController.updateCartQuantity);
+router.route("/removeCartItem").put(userController.removeCartItem);
+
 
 
 

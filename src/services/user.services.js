@@ -821,7 +821,83 @@ promoDis,
     console.error("Error updating quantity:", error);
     return errorRes(res, 500, error.message);
   }
+},
+removeCartItem: async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { type, basketId, productId } = req.body;
+
+    const cart = await Model.Cart.findOne({ userId })
+      .populate("baskets.basketId")
+      .populate("baskets.products.productId")
+      .populate("individualProducts.productId");
+
+    if (!cart) return errorRes(res, 404, "Cart not found");
+
+    // ---- Case 1: Remove an individual product ----
+    if (type === "individual") {
+      const productIndex = cart.individualProducts.findIndex(
+        (p) => p.productId.toString() === productId
+      );
+
+      if (productIndex === -1)
+        return errorRes(res, 404, "Product not found in individual items");
+
+      cart.individualProducts.splice(productIndex, 1);
+    }
+
+    // ---- Case 2: Remove a full basket ----
+    else if (type === "basket") {
+      const basketIndex = cart.baskets.findIndex(
+        (b) => b.basketId.toString() === basketId
+      );
+
+      if (basketIndex === -1) return errorRes(res, 404, "Basket not found");
+
+      cart.baskets.splice(basketIndex, 1);
+    }
+
+    // ---- Case 3: Remove a product inside a basket ----
+    else if (type === "basketProduct") {
+      const basket = cart.baskets.find(
+        (b) => b.basketId.toString() === basketId
+      );
+      if (!basket) return errorRes(res, 404, "Basket not found");
+
+      // 🔒 Check if basket is predefined (e.g. admin-created or fixed)
+      if (basket?.type == "predefined") {
+        return errorRes(
+          res,
+          403,
+          "You cannot remove products from a predefined basket"
+        );
+      }
+
+      const productIndex = basket.products.findIndex(
+        (p) => p.productId.toString() === productId
+      );
+      if (productIndex === -1)
+        return errorRes(res, 404, "Product not found in basket");
+
+      basket.products.splice(productIndex, 1);
+    }
+
+    // ---- Invalid Type ----
+    else {
+      return errorRes(res, 400, "Invalid type");
+    }
+
+    await cart.save();
+
+    // const { totalAmount, detailedItems } = calculateCartTotal(cart);
+
+    return successRes(res, 200, "Item removed successfully");
+  } catch (error) {
+    console.error("Error removing cart item:", error);
+    return errorRes(res, 500, error.message);
+  }
 }
+
 
 };
 
