@@ -41,6 +41,7 @@ const userServices = {
           type: basketType,
           products: products || [],
           note,
+          quantity,
           replacements: basketType === "predefined" ? replacements || [] : [],
         });
       } else {
