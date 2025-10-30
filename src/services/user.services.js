@@ -21,7 +21,7 @@ const userServices = {
         if (!basketData) {
           return errorRes(res, 404, "Basket not found");
         }
-        const basketType = basketData?.box_type == 1 ? "custom" : "predefined";
+        const basketType = basketData?.box_type == 1 ? "predefined" : "custom";
 
         // Validate replacements only for predefined basket
         if (
