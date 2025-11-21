@@ -149,5 +149,8 @@ createProfile: async (req, res) => {
   removeCartItem: async (req, res) => {
     await userServices.removeCartItem(req, res);
   },
+  getNotifications: async (req, res) => {
+    await userServices.getNotifications(req, res);
+  },
 };
 export default userController;

@@ -2,6 +2,7 @@ import * as Model from "../models/index.js";
 import { errorRes, successRes } from "../utils/response.js";
 import JWT from "jsonwebtoken";
 import "dotenv/config";
+// import sendOtp from "../utils/twilio.js";
 const JWT_SECRET_KEY = process.env.JWT_SECRET;
 
 const authServices = {
@@ -62,6 +63,10 @@ const authServices = {
           device_model,
           otp,
         });
+        // await sendOtp(
+        //   `Hi, your mg fresh OTP is ${otp}. It's valid for 10 minutes`,
+        //   newUser
+        // );
         return successRes(
           res,
           200,
@@ -82,7 +87,10 @@ const authServices = {
       user.device_type = device_type;
       user.otp = otp;
       await user.save();
-
+      // await sendOtp(
+      //   `Hi, your mg fresh OTP is ${otp}. It's valid for 10 minutes`,
+      //   user
+      // );
       return successRes(
         res,
         200,
@@ -185,7 +193,9 @@ const authServices = {
   },
   getProfile: async (req, res) => {
     try {
-      const getData = await Model.User.findById(req.user._id).populate("active_address");
+      const getData = await Model.User.findById(req.user._id).populate(
+        "active_address"
+      );
       if (!getData) {
         return errorRes(res, 404, "User not found");
       }

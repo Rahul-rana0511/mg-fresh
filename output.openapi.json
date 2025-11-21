@@ -1578,6 +1578,35 @@
           }
         ]
       }
+    },
+    "/api/user/getNotifications": {
+      "get": {
+        "tags": [
+          "Core Functionality"
+        ],
+        "summary": " Get Notifications Api",
+        "responses": {
+          "200": {
+            "description": "Successful Operation"
+          },
+          "400": {
+            "description": "Bad request - Invalid input, validation error"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication failure"
+          },
+          "500": {
+            "description": "Internal server error - Something went wrong on the server side"
+          }
+        },
+        "security": [
+          {
+            "access_token": [
+              "access_token"
+            ]
+          }
+        ]
+      }
     }
   },
   "components": {

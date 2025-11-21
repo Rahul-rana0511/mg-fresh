@@ -70,6 +70,9 @@ router.route("/updateActiveAddress").put(userController.updateActiveAddress);
 router.route("/updateCartQuantity").put(userController.updateCartQuantity);
 router.route("/removeCartItem").put(userController.removeCartItem);
 
+router.route("/getNotifications").get(userController.getNotifications);
+
+
 
 
 

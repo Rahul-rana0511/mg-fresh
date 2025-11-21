@@ -897,6 +897,21 @@ removeCartItem: async (req, res) => {
     console.error("Error removing cart item:", error);
     return errorRes(res, 500, error.message);
   }
+},
+
+getNotifications: async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const notification = await Model.Notification.find({ userId })
+      .populate("other_user")
+      .sort({createdAt: -1})
+
+    
+    return successRes(res, 200, "Notification fetched successfully", notification);
+  } catch (error) {
+    console.error("Error removing cart item:", error);
+    return errorRes(res, 500, error.message);
+  }
 }
 
 
