@@ -2,6 +2,7 @@ import * as Model from "../models/index.js";
 import { errorRes, successRes } from "../utils/response.js";
 import JWT from "jsonwebtoken";
 import "dotenv/config";
+import sendEmailOtp from "../utils/sendEmailOtp.js";
 // import sendOtp from "../utils/twilio.js";
 const JWT_SECRET_KEY = process.env.JWT_SECRET;
 
@@ -40,67 +41,130 @@ const authServices = {
     }
   },
 
+  // login: async (req, res) => {
+  //   try {
+  //     const {
+  //       phone_number,
+  //       country_code,
+  //       device_token,
+  //       device_type,
+  //       device_model,
+  //     } = req.body;
+  //     let otp = Math.floor(1000 + Math.random() * 9000);
+  //     const user = await Model.User.findOne({
+  //       phone_number: phone_number,
+  //       country_code: country_code,
+  //     });
+  //     if (!user) {
+  //       const newUser = await Model.User.create({
+  //         phone_number,
+  //         country_code,
+  //         device_token,
+  //         device_type,
+  //         device_model,
+  //         otp,
+  //       });
+  //       // await sendOtp(
+  //       //   `Hi, your mg fresh OTP is ${otp}. It's valid for 10 minutes`,
+  //       //   newUser
+  //       // );
+  //       return successRes(
+  //         res,
+  //         200,
+  //         "OTP has been sent to your provided phone number",
+  //         newUser
+  //       );
+  //     }
+  //     if (!user.is_active) {
+  //       return errorRes(
+  //         res,
+  //         400,
+  //         "Your Account has been De-activated By Admin"
+  //       );
+  //     }
+
+  //     user.device_token = device_token;
+  //     user.device_model = device_model;
+  //     user.device_type = device_type;
+  //     user.otp = otp;
+  //     await user.save();
+  //     // await sendOtp(
+  //     //   `Hi, your mg fresh OTP is ${otp}. It's valid for 10 minutes`,
+  //     //   user
+  //     // );
+  //     return successRes(
+  //       res,
+  //       200,
+  //       "OTP has been sent to your provided phone number",
+  //       user
+  //     );
+  //   } catch (err) {
+  //     return errorRes(res, 500, err.message);
+  //   }
+  // },
+
   login: async (req, res) => {
-    try {
-      const {
-        phone_number,
-        country_code,
+  try {
+    let { email, device_token, device_type, device_model } = req.body;
+
+    if (!email) {
+      return errorRes(res, 400, "Email is required");
+    }
+
+    email = email.trim().toLowerCase();
+
+    const otp = Math.floor(1000 + Math.random() * 9000);
+
+    let user = await Model.User.findOne({ email });
+
+    if (!user) {
+      user = await Model.User.create({
+        email,
         device_token,
         device_type,
         device_model,
-      } = req.body;
-      let otp = Math.floor(1000 + Math.random() * 9000);
-      const user = await Model.User.findOne({
-        phone_number: phone_number,
-        country_code: country_code,
+        otp,
       });
-      if (!user) {
-        const newUser = await Model.User.create({
-          phone_number,
-          country_code,
-          device_token,
-          device_type,
-          device_model,
-          otp,
-        });
-        // await sendOtp(
-        //   `Hi, your mg fresh OTP is ${otp}. It's valid for 10 minutes`,
-        //   newUser
-        // );
-        return successRes(
-          res,
-          200,
-          "OTP has been sent to your provided phone number",
-          newUser
-        );
-      }
-      if (!user.is_active) {
-        return errorRes(
-          res,
-          400,
-          "Your Account has been De-activated By Admin"
-        );
-      }
 
-      user.device_token = device_token;
-      user.device_model = device_model;
-      user.device_type = device_type;
-      user.otp = otp;
-      await user.save();
-      // await sendOtp(
-      //   `Hi, your mg fresh OTP is ${otp}. It's valid for 10 minutes`,
-      //   user
-      // );
+      await sendEmailOtp(email, otp);
+
       return successRes(
         res,
         200,
-        "OTP has been sent to your provided phone number",
+        "OTP has been sent to your registered email",
         user
       );
-    } catch (err) {
-      return errorRes(res, 500, err.message);
     }
-  },
+
+    if (!user.is_active) {
+      return errorRes(
+        res,
+        400,
+        "Your account has been de-activated by admin"
+      );
+    }
+
+    user.device_token = device_token;
+    user.device_type = device_type;
+    user.device_model = device_model;
+    user.otp = otp;
+
+    await user.save();
+
+    await sendEmailOtp(email, otp);
+
+    return successRes(
+      res,
+      200,
+      "OTP has been sent to your registered email",
+      user
+    );
+
+  } catch (err) {
+    return errorRes(res, 500, err.message);
+  }
+},
+
 
   resendOTP: async (req, res) => {
     try {
@@ -148,7 +212,7 @@ const authServices = {
         return successRes(
           res,
           200,
-          "Phone number verified successfully.",
+          "Email verified successfully.",
           response
         );
       } else {

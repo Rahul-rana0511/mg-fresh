@@ -2292,6 +2292,10 @@
         "login": {
           "type": "object",
           "properties": {
+              "email": {
+              "description": "Enter your phone number",
+              "type": "number"
+            },
             "phone_number": {
               "description": "Enter your phone number",
               "type": "number"
