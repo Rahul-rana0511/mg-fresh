@@ -179,6 +179,7 @@ const authServices = {
         { $set: { otp: otp } },
         { new: true }
       );
+       await sendEmailOtp(updateData?.email, otp);
       return successRes(
         res,
         200,
