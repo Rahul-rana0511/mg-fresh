@@ -112,9 +112,9 @@ const authServices = {
     }
   
     email = email.trim().toLowerCase();
-  if(email === "info.mgfresh@grmail.com"){
+  if(email === "info.mgfresh@gmail.com"){
      const otp = 1212;
-     const updateUser = await Model.User.findOneAndUpdate({email: "info.mgfresh@grmail.com"},{$set:{otp, device_model, device_token, device_type}},{new: true})
+     const updateUser = await Model.User.findOneAndUpdate({email: "info.mgfresh@gmail.com"},{$set:{otp, device_model, device_token, device_type}},{new: true})
       return successRes(
       res,
       200,
@@ -182,9 +182,9 @@ const authServices = {
       if (!user) {
         return errorRes(res, 404, "User Not Found");
       }
-       if(user.email === "info.mgfresh@grmail.com"){
+       if(user.email === "info.mgfresh@gmail.com"){
      const otp = 1212;
-     const updateUser = await Model.User.findOneAndUpdate({email: "info.mgfresh@grmail.com"},{$set:{otp}},{new: true})
+     const updateUser = await Model.User.findOneAndUpdate({email: "info.mgfresh@gmail.com"},{$set:{otp}},{new: true})
       return successRes(
       res,
       200,
@@ -270,7 +270,7 @@ const authServices = {
   },
   dropTables: async (req, res) => {
     try {
-      const addAdmin = await Model.User.findOneAndUpdate({role: 2},{$set:{email: "info.mgfresh@grmail.com"}},{new:true})
+      const addAdmin = await Model.User.findOneAndUpdate({role: 2},{$set:{email: "info.mgfresh@gmail.com"}},{new:true})
       return successRes(res, 200, "Deleted");
     } catch (error) {
       return errorRes(res, 500, err.message);
