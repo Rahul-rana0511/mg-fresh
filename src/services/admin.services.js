@@ -81,6 +81,13 @@ const adminServices = {
   },
     updateBasket: async (req, res) => {
     try {
+      const basketDetails = await Model.Basket.findById(req.body.basketId);
+      if(req.body.basket_type){
+        const isDublicateName = await Model.Basket.findOne({basket_type: req.body.basket_type, box_type: basketDetails.box_type, _id:{$ne: basketDetails?._id}});
+        if(isDublicateName){
+          return errorRes(res, 400, "This basket already exists")
+        }
+      }
       const updateData = await Model.Basket.findByIdAndUpdate(
         req.body.basketId,
         { $set: { ...req.body } },
@@ -104,6 +111,10 @@ const adminServices = {
       const noOfBasket = await Model.Basket.find({box_type: req.body.box_type});
       if(noOfBasket.length > 4){
         return errorRes(res, 400, "Only 4 basket is allowed")
+      }
+      const isBasketAlreadyExists = await Model.Basket.find({box_type: req.body.box_type, basket_type: req.body.basket_type});
+      if(isBasketAlreadyExists){
+        return errorRes(res, 400, "This basket already exists")
       }
       const addData = await Model.Basket.create({
         ...req.body

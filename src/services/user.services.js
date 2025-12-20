@@ -187,10 +187,12 @@ const userServices = {
         }
       );
       const allProducts = await Model.Product.find({}).sort({ createdAt: -1 });
+      const dairyProduts = await Model.Product.find({product_type:{$in:["Milk","Flour"]}}).sort({createdAt: -1})
       return successRes(res, 200, "Home screen data fetched successfully", {
         custom: boxesFilter.custom,
         goodness: boxesFilter.goodness,
         products: allProducts,
+        dairyProduts: dairyProduts
       });
     } catch (error) {
       return errorRes(res, 500, error.message);
