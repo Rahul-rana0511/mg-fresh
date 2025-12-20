@@ -186,8 +186,8 @@ const userServices = {
           goodness: [],
         }
       );
-      const allProducts = await Model.Product.find({}).sort({ createdAt: -1 });
-      const dairyProduts = await Model.Product.find({product_type:{$in:["Milk","Flour"]}}).sort({createdAt: -1})
+      const allProducts = await Model.Product.find({product_type:{$nin:["Milk","Flour"]}}).sort({ createdAt: -1 }).limit(10);
+      const dairyProduts = await Model.Product.find({product_type:{$in:["Milk","Flour"]}}).sort({createdAt: -1}).limit(10)
       return successRes(res, 200, "Home screen data fetched successfully", {
         custom: boxesFilter.custom,
         goodness: boxesFilter.goodness,
