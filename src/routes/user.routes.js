@@ -18,7 +18,7 @@ router.route("/deleteAccount").delete(userController.deleteAccount);
 router.route("/logout").patch(userController.logout);
 //--Setting
 router.route("/getProfile").get(userController.getProfile);
-router.route("/createProfile").put(validations.validateCreateProfile, userController.createProfile);
+router.route("/createProfile").put(userController.createProfile);
 
 //--Admin Flow Apis--
 router.route("/addProduct").post(validations.validateAddProduct,userController.addProduct);
