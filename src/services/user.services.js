@@ -51,7 +51,7 @@ const userServices = {
         );
 
         if (existingProduct) {
-          existingProduct.quantity += quantity || 1;
+          existingProduct.quantity = quantity || 1;
         } else {
           cart.individualProducts.push({
             productId,
