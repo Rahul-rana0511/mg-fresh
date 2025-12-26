@@ -9,7 +9,7 @@ const userServices = {
       const userId = req.user._id;
       const { basketId, products, productId, quantity, replacements, note } =
         req.body;
-
+      console.log(req.body, "request")
       let cart = await Model.Cart.findOne({ userId });
 
       if (!cart) {
