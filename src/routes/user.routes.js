@@ -18,8 +18,9 @@ router.route("/getProductDetails/:productId").get(userController.getProductDetai
 router.route("/getBaskets").get(userController.getBaskets);
 router.route("/getBasketDetails/:basketId").get(userController.getBasketDetails);
 router.route("/homeScreen").get(userController.homeScreen);
-router.route("/getCartItems").get(userController.getCartItems);
+
 router.use(authentication)
+router.route("/getCartItems").get(userController.getCartItems);
 router.route("/deleteAccount").delete(userController.deleteAccount);
 router.route("/logout").patch(userController.logout);
 //--Setting
