@@ -8,7 +8,10 @@ import openapi_docs from "./output.openapi.json" assert { type: "json" };
 import connectDB from "./src/config/db.connection.js";
 // import adminRoutes from "./src/routes/adminRoutes.js";
 import userRoutes from "./src/routes/user.routes.js";
-
+import cron from "node-cron";
+import Order from "./src/models/orders.js";
+import User from "./src/models/users.js";
+import pushNotification from "./src/utils/notificationHandler.js";
 // ✅ Load env first
 dotenv.config();
 
@@ -41,6 +44,49 @@ app.use("/api/user", userRoutes);
 app.use("/docs", swagger_ui.serve, swagger_ui.setup(openapi_docs, {
   title: `Mg fresh Documentation`
 }));
+
+
+cron.schedule("0 0 * * *", async () => {
+  console.log("🔁 Running inactivity purchase reminder cron");
+
+  try {
+    const users = await Order.aggregate([
+      { $match: { status: "purchased" } },
+      {
+        $group: {
+          _id: "$user_id",
+           lastOrderAt: { $max: "$createdAt" }
+        }
+      }
+    ]);
+
+    const now = new Date();
+
+    for (const user of users) {
+      const diffInDays =
+        (now - new Date(user.lastOrderAt)) / (1000 * 60 * 60 * 24);
+
+      if (diffInDays >= 7) {
+        const alreadyNotified = await User.findOne({
+          _id: user._id,
+          is_notification_sent: 1
+        });
+
+        if (alreadyNotified) continue;
+          await pushNotification({
+          user_id: user?._id,
+          type: "reminder"
+        });
+          await User.updateOne(
+          { _id: user._id },
+          { is_notification_sent: 1 }
+        );
+      }
+    }
+  } catch (error) {
+    console.error("❌ Cron error:", error);
+  }
+});
 
 // ✅ Start Server
 app.listen(PORT, () => {

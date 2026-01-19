@@ -9,7 +9,7 @@ const userServices = {
       const userId = req.user._id;
       const { basketId, products, productId, quantity, replacements, note } =
         req.body;
-      console.log(req.body, "request")
+      console.log(req.body, "request");
       let cart = await Model.Cart.findOne({ userId });
 
       if (!cart) {
@@ -56,7 +56,7 @@ const userServices = {
           cart.individualProducts.push({
             productId,
             quantity: quantity || 1,
-            note
+            note,
           });
         }
       }
@@ -188,15 +188,23 @@ const userServices = {
       );
       // const cartItems = await Model.Cart.findOne({userId: req.user._id});
       // if(cartItems){
-        
+
       // }
-      const allProducts = await Model.Product.find({product_type:{$nin:["Milk","Flour"]}}).sort({ createdAt: -1 }).limit(10);
-      const dairyProduts = await Model.Product.find({product_type:{$in:["Milk","Flour"]}}).sort({createdAt: -1}).limit(10)
+      const allProducts = await Model.Product.find({
+        product_type: { $nin: ["Milk", "Flour"] },
+      })
+        .sort({ createdAt: -1 })
+        .limit(10);
+      const dairyProduts = await Model.Product.find({
+        product_type: { $in: ["Milk", "Flour"] },
+      })
+        .sort({ createdAt: -1 })
+        .limit(10);
       return successRes(res, 200, "Home screen data fetched successfully", {
         custom: boxesFilter.custom,
         goodness: boxesFilter.goodness,
         products: allProducts,
-        dairyProduts: dairyProduts
+        dairyProduts: dairyProduts,
       });
     } catch (error) {
       return errorRes(res, 500, error.message);
@@ -291,7 +299,7 @@ const userServices = {
       const cart = await Model.Cart.findOne({ userId })
         .populate("baskets.products.productId")
         .populate("individualProducts.productId")
-          .populate("promoId");
+        .populate("promoId");
 
       if (!cart) {
         return errorRes(res, 404, "Cart not found");
@@ -322,18 +330,17 @@ const userServices = {
         // 👇 multiply by basket.quantity
         totalAmount += basketTotal * (basket.quantity || 1);
       }
-    // 💸 Apply promocode discount (if exists)
-    let promoDiscount = 0;
-    let finalAmount = totalAmount;
+      // 💸 Apply promocode discount (if exists)
+      let promoDiscount = 0;
+      let finalAmount = totalAmount;
 
-    if (cart.promoId) {
-      const promo = cart.promoId;
-     promoDiscount = (totalAmount * promo.value) / 100;
+      if (cart.promoId) {
+        const promo = cart.promoId;
+        promoDiscount = (totalAmount * promo.value) / 100;
         finalAmount = totalAmount - promoDiscount;
       }
-    
 
-    const amountInPaise = Math.round(finalAmount * 100);
+      const amountInPaise = Math.round(finalAmount * 100);
       // const amountInPaise = totalAmount * 100;
 
       const razorpayOrder = await razorpay.orders.create({
@@ -375,8 +382,10 @@ const userServices = {
       // }
 
       // 2. Get user's cart
-      const cart = await Model.Cart.findOne({ userId }).populate("individualProducts.productId")
-      .populate("baskets.products.productId").populate("promoId");
+      const cart = await Model.Cart.findOne({ userId })
+        .populate("individualProducts.productId")
+        .populate("baskets.products.productId")
+        .populate("promoId");
 
       if (!cart || (!cart.individualProducts.length && !cart.baskets.length)) {
         return errorRes(res, 400, "Cart is empty or invalid");
@@ -391,14 +400,13 @@ const userServices = {
       //       totalQuantity += item.quantity;
       // }
 
-
-       // Individual products
-    for (const item of cart.individualProducts) {
-      const price = item.productId?.product_price ?? 0;
-      const qty = item.quantity || 0;
-      totalAmount += price * qty;
-      totalQuantity += qty;
-    }
+      // Individual products
+      for (const item of cart.individualProducts) {
+        const price = item.productId?.product_price ?? 0;
+        const qty = item.quantity || 0;
+        totalAmount += price * qty;
+        totalQuantity += qty;
+      }
       // for (const basket of cart.baskets) {
       //   for (const item of basket.products) {
       //     const product = await Model.Product.findById(item.productId);
@@ -407,41 +415,39 @@ const userServices = {
       //   }
       // }
 
-         for (const basket of cart.baskets) {
-      if (!basket.products?.length) continue;
+      for (const basket of cart.baskets) {
+        if (!basket.products?.length) continue;
 
-      let basketTotal = 0;
-      let basketItemsQuantity = 0;
+        let basketTotal = 0;
+        let basketItemsQuantity = 0;
 
-      for (const item of basket.products) {
-        const price = item.productId?.product_price ?? 0;
-        const qty = item.quantity || 0;
-        basketTotal += price * qty;
-        basketItemsQuantity += qty;
+        for (const item of basket.products) {
+          const price = item.productId?.product_price ?? 0;
+          const qty = item.quantity || 0;
+          basketTotal += price * qty;
+          basketItemsQuantity += qty;
+        }
+
+        const multiplier = basket.quantity || 1;
+        totalAmount += basketTotal * multiplier;
+        totalQuantity += basketItemsQuantity * multiplier;
       }
 
-      const multiplier = basket.quantity || 1;
-      totalAmount += basketTotal * multiplier;
-      totalQuantity += basketItemsQuantity * multiplier;
-    }
+      // 4. Apply promo if exists
+      let promoDiscount = 0;
+      let finalAmount = totalAmount;
 
+      if (cart.promoId) {
+        const promo = cart.promoId;
 
-     // 4. Apply promo if exists
-    let promoDiscount = 0;
-    let finalAmount = totalAmount;
-
-    if (cart.promoId) {
-      const promo = cart.promoId;
-
-     
         promoDiscount = (totalAmount * promo.value) / 100;
-      finalAmount = totalAmount - promoDiscount;
+        finalAmount = totalAmount - promoDiscount;
 
-      // ✅ Optionally mark promo as used
-      promo.usedBy.push(userId);
-      promo.usedCount += 1;
-      await promo.save();
-    }
+        // ✅ Optionally mark promo as used
+        promo.usedBy.push(userId);
+        promo.usedCount += 1;
+        await promo.save();
+      }
 
       // 4. Create order in DB
       const order = await Model.Order.create({
@@ -450,7 +456,7 @@ const userServices = {
         individualProducts: cart.individualProducts,
         totalAmount: finalAmount,
         discount: promoDiscount,
-        amount: totalAmount, 
+        amount: totalAmount,
         totalQuantity,
         paymentStatus: "paid",
         paymentMethod: paymentMethod || "card",
@@ -464,15 +470,14 @@ const userServices = {
       //   });
       // }
 
-          for (const item of cart.individualProducts) {
-      const qty = item.quantity || 0;
-      if (qty > 0) {
-        await Model.Product.findByIdAndUpdate(item.productId, {
-          $inc: { stock: -qty },
-        });
+      for (const item of cart.individualProducts) {
+        const qty = item.quantity || 0;
+        if (qty > 0) {
+          await Model.Product.findByIdAndUpdate(item.productId, {
+            $inc: { stock: -qty },
+          });
+        }
       }
-    }
-
 
       // for (const basket of cart.baskets) {
       //   for (const item of basket.products) {
@@ -482,21 +487,23 @@ const userServices = {
       //   }
       // }
 
-          for (const basket of cart.baskets) {
-      const multiplier = basket.quantity || 1;
-      for (const item of basket.products) {
-        const qty = (item.quantity || 0) * multiplier;
-        if (qty > 0) {
-          await Model.Product.findByIdAndUpdate(item.productId, {
-            $inc: { stock: -qty },
-          });
+      for (const basket of cart.baskets) {
+        const multiplier = basket.quantity || 1;
+        for (const item of basket.products) {
+          const qty = (item.quantity || 0) * multiplier;
+          if (qty > 0) {
+            await Model.Product.findByIdAndUpdate(item.productId, {
+              $inc: { stock: -qty },
+            });
+          }
         }
       }
-    }
       // 6. Clear cart
       cart.individualProducts = [];
       cart.baskets = [];
       await cart.save();
+      req.user.is_notification_sent = 0;
+      await req.user.save();
       return successRes(
         res,
         200,
@@ -530,22 +537,22 @@ const userServices = {
       let { totalAmount, detailedItems } = await calculateCartTotal(cart);
       let promoDis = 0;
       let amount = totalAmount;
-       if (cart?.promoId) {
-  const promo = cart?.promoId;
-  // promoDis = promo.type === "percentage"
-  //   ? (totalAmount * promo.value) / 100
-  //   : promo.value;
-   promoDis = (totalAmount * promo.value) / 100
-    
-  totalAmount -= promoDis;
-}
+      if (cart?.promoId) {
+        const promo = cart?.promoId;
+        // promoDis = promo.type === "percentage"
+        //   ? (totalAmount * promo.value) / 100
+        //   : promo.value;
+        promoDis = (totalAmount * promo.value) / 100;
+
+        totalAmount -= promoDis;
+      }
       let data = {
         individualProducts: cart.individualProducts.map((item) => ({
           productId: item.productId._id,
           name: item.productId.product_name,
           quantity: item.quantity,
           price: item.productId.product_price,
-          note: item?.note
+          note: item?.note,
         })),
 
         baskets: cart.baskets.map((basket) => ({
@@ -561,8 +568,8 @@ const userServices = {
             price: item.productId.product_price,
           })),
         })),
-amount,
-promoDis,
+        amount,
+        promoDis,
         totalAmount,
         detailedItems, // optional: for displaying itemized summary
       };
@@ -572,21 +579,21 @@ promoDis,
       res.status(500).json({ message: "Internal server error" });
     }
   },
-   applyPromocode: async (req, res) => {
+  applyPromocode: async (req, res) => {
     try {
       const userId = req.user.id;
-      const {promoId} = req.body;
+      const { promoId } = req.body;
       const promoData = await Model.PromoCode.findById(promoId);
-      if(!promoData){
-        return errorRes(res, 404, "Promo not found")
+      if (!promoData) {
+        return errorRes(res, 404, "Promo not found");
       }
       if (promoData.status !== "active") {
-  return errorRes(res, 400, "This promo code is not active");
-}
+        return errorRes(res, 400, "This promo code is not active");
+      }
 
-      const alreadyUsed = promoData?.usedBy?.map(user => user?.toString());
-      if(alreadyUsed.includes(userId.toString())){
-        return errorRes(res, 400, "You already used this promocode")
+      const alreadyUsed = promoData?.usedBy?.map((user) => user?.toString());
+      if (alreadyUsed.includes(userId.toString())) {
+        return errorRes(res, 400, "You already used this promocode");
       }
       const cart = await Model.Cart.findOne({ userId })
         .populate("baskets.products.productId")
@@ -603,15 +610,19 @@ promoDis,
       }
 
       const { totalAmount, detailedItems } = await calculateCartTotal(cart);
-      if(totalAmount < promoData.minOrderValue){
-        return errorRes(res, 400, "Please buy more items to apply this promocode")
+      if (totalAmount < promoData.minOrderValue) {
+        return errorRes(
+          res,
+          400,
+          "Please buy more items to apply this promocode"
+        );
       }
       cart.promoId = promoId;
       await cart.save();
       return successRes(res, 200, "Promo code added successfully");
     } catch (err) {
       console.error("Failed to get cart items:", err);
-    return  res.status(500).json({ message: "Internal server error" });
+      return res.status(500).json({ message: "Internal server error" });
     }
   },
   chooseAddress: async (req, res) => {
@@ -677,6 +688,7 @@ promoDis,
   },
   updateOrderStatus: async (req, res) => {
     try {
+      const { status } = req.body;
       const orderDetails = await Model.Order.findByIdAndUpdate(
         req.body.orderId,
         { $set: { status: req.body.status } },
@@ -685,7 +697,15 @@ promoDis,
       if (!orderDetails) {
         return errorRes(res, 404, "Order not found");
       }
-
+      const notificationTypeMap = {
+        confirmed: "orderBooked",
+        shipped: "orderShipped",
+        delivered: "orderDelivered",
+      };
+      await pushNotification({
+        user_id: orderDetails?.userId,
+        type: notificationTypeMap[status],
+      });
       return successRes(
         res,
         200,
@@ -756,171 +776,175 @@ promoDis,
     }
   },
   updateCartQuantity: async (req, res) => {
-  try {
-    const userId = req.user._id;
-    const { type, basketId, productId, action } = req.body;
+    try {
+      const userId = req.user._id;
+      const { type, basketId, productId, action } = req.body;
 
-    if (!["increase", "decrease"].includes(action)) {
-      return errorRes(res, 400, "Invalid action type");
+      if (!["increase", "decrease"].includes(action)) {
+        return errorRes(res, 400, "Invalid action type");
+      }
+
+      const cart = await Model.Cart.findOne({ userId });
+      if (!cart) return errorRes(res, 404, "Cart not found");
+
+      const change = action === "increase" ? 1 : -1;
+
+      if (type === "individual") {
+        const productIndex = cart.individualProducts.findIndex(
+          (p) => p.productId.toString() === productId
+        );
+        if (productIndex === -1)
+          return errorRes(res, 404, "Product not found in cart");
+
+        const product = cart.individualProducts[productIndex];
+        product.quantity += change;
+
+        if (product.quantity <= 0) {
+          // Remove product if quantity is 0 or less
+          cart.individualProducts.splice(productIndex, 1);
+        }
+      } else if (type === "basket") {
+        const basketIndex = cart.baskets.findIndex(
+          (b) => b.basketId.toString() === basketId
+        );
+        if (basketIndex === -1) return errorRes(res, 404, "Basket not found");
+
+        const basket = cart.baskets[basketIndex];
+        basket.quantity = (basket.quantity || 1) + change;
+
+        if (basket.quantity <= 0) {
+          cart.baskets.splice(basketIndex, 1); // remove basket
+        }
+      } else if (type === "basketProduct") {
+        const basket = cart.baskets.find(
+          (b) => b.basketId.toString() === basketId
+        );
+        if (!basket) return errorRes(res, 404, "Basket not found");
+
+        const productIndex = basket.products.findIndex(
+          (p) => p.productId.toString() === productId
+        );
+        if (productIndex === -1)
+          return errorRes(res, 404, "Product not found in basket");
+
+        const product = basket.products[productIndex];
+        product.quantity += change;
+
+        if (product.quantity <= 0) {
+          basket.products.splice(productIndex, 1); // remove product from basket
+        }
+      } else {
+        return errorRes(res, 400, "Invalid type");
+      }
+
+      await cart.save();
+
+      const { totalAmount, detailedItems } = calculateCartTotal(cart);
+
+      return successRes(res, 200, "Cart updated successfully", {
+        totalAmount,
+        cart,
+        detailedItems,
+      });
+    } catch (error) {
+      console.error("Error updating quantity:", error);
+      return errorRes(res, 500, error.message);
     }
+  },
+  removeCartItem: async (req, res) => {
+    try {
+      const userId = req.user._id;
+      const { type, basketId, productId } = req.body;
 
-    const cart = await Model.Cart.findOne({ userId });
-    if (!cart) return errorRes(res, 404, "Cart not found");
+      const cart = await Model.Cart.findOne({ userId })
+        .populate("baskets.basketId")
+        .populate("baskets.products.productId")
+        .populate("individualProducts.productId");
 
-    const change = action === "increase" ? 1 : -1;
+      if (!cart) return errorRes(res, 404, "Cart not found");
 
-    if (type === "individual") {
-      const productIndex = cart.individualProducts.findIndex(
-        (p) => p.productId.toString() === productId
-      );
-      if (productIndex === -1) return errorRes(res, 404, "Product not found in cart");
+      // ---- Case 1: Remove an individual product ----
+      if (type === "individual") {
+        const productIndex = cart.individualProducts.findIndex(
+          (p) => p.productId?._id.toString() === productId
+        );
 
-      const product = cart.individualProducts[productIndex];
-      product.quantity += change;
+        if (productIndex === -1)
+          return errorRes(res, 404, "Product not found in individual items");
 
-      if (product.quantity <= 0) {
-        // Remove product if quantity is 0 or less
         cart.individualProducts.splice(productIndex, 1);
       }
 
-    } else if (type === "basket") {
-      const basketIndex = cart.baskets.findIndex((b) => b.basketId.toString() === basketId);
-      if (basketIndex === -1) return errorRes(res, 404, "Basket not found");
-
-      const basket = cart.baskets[basketIndex];
-      basket.quantity = (basket.quantity || 1) + change;
-
-      if (basket.quantity <= 0) {
-        cart.baskets.splice(basketIndex, 1); // remove basket
-      }
-
-    } else if (type === "basketProduct") {
-      const basket = cart.baskets.find((b) => b.basketId.toString() === basketId);
-      if (!basket) return errorRes(res, 404, "Basket not found");
-
-      const productIndex = basket.products.findIndex(
-        (p) => p.productId.toString() === productId
-      );
-      if (productIndex === -1) return errorRes(res, 404, "Product not found in basket");
-
-      const product = basket.products[productIndex];
-      product.quantity += change;
-
-      if (product.quantity <= 0) {
-        basket.products.splice(productIndex, 1); // remove product from basket
-      }
-
-    } else {
-      return errorRes(res, 400, "Invalid type");
-    }
-
-    await cart.save();
-
-    const { totalAmount, detailedItems } = calculateCartTotal(cart);
-
-    return successRes(res, 200, "Cart updated successfully", {
-      totalAmount,
-      cart,
-      detailedItems,
-    });
-
-  } catch (error) {
-    console.error("Error updating quantity:", error);
-    return errorRes(res, 500, error.message);
-  }
-},
-removeCartItem: async (req, res) => {
-  try {
-    const userId = req.user._id;
-    const { type, basketId, productId } = req.body;
-
-    const cart = await Model.Cart.findOne({ userId })
-      .populate("baskets.basketId")
-      .populate("baskets.products.productId")
-      .populate("individualProducts.productId");
-
-    if (!cart) return errorRes(res, 404, "Cart not found");
-
-    // ---- Case 1: Remove an individual product ----
-    if (type === "individual") {
-      const productIndex = cart.individualProducts.findIndex(
-        (p) => p.productId?._id.toString() === productId
-      );
-
-      if (productIndex === -1)
-        return errorRes(res, 404, "Product not found in individual items");
-
-      cart.individualProducts.splice(productIndex, 1);
-    }
-
-    // ---- Case 2: Remove a full basket ----
-    else if (type === "basket") {
-      const basketIndex = cart.baskets.findIndex(
-        (b) => b.basketId?._id?.toString() === basketId
-      );
-
-      if (basketIndex === -1) return errorRes(res, 404, "Basket not found");
-
-      cart.baskets.splice(basketIndex, 1);
-    }
-
-    // ---- Case 3: Remove a product inside a basket ----
-    else if (type === "basketProduct") {
-      const basket = cart.baskets.find(
-        (b) => b.basketId?._id?.toString() === basketId
-      );
-      if (!basket) return errorRes(res, 404, "Basket not found");
-
-      // 🔒 Check if basket is predefined (e.g. admin-created or fixed)
-      if (basket?.type == "predefined") {
-        return errorRes(
-          res,
-          403,
-          "You cannot remove products from a predefined basket"
+      // ---- Case 2: Remove a full basket ----
+      else if (type === "basket") {
+        const basketIndex = cart.baskets.findIndex(
+          (b) => b.basketId?._id?.toString() === basketId
         );
+
+        if (basketIndex === -1) return errorRes(res, 404, "Basket not found");
+
+        cart.baskets.splice(basketIndex, 1);
       }
 
-      const productIndex = basket.products.findIndex(
-        (p) => p.productId?._id.toString() === productId
+      // ---- Case 3: Remove a product inside a basket ----
+      else if (type === "basketProduct") {
+        const basket = cart.baskets.find(
+          (b) => b.basketId?._id?.toString() === basketId
+        );
+        if (!basket) return errorRes(res, 404, "Basket not found");
+
+        // 🔒 Check if basket is predefined (e.g. admin-created or fixed)
+        if (basket?.type == "predefined") {
+          return errorRes(
+            res,
+            403,
+            "You cannot remove products from a predefined basket"
+          );
+        }
+
+        const productIndex = basket.products.findIndex(
+          (p) => p.productId?._id.toString() === productId
+        );
+        if (productIndex === -1)
+          return errorRes(res, 404, "Product not found in basket");
+
+        basket.products.splice(productIndex, 1);
+      }
+
+      // ---- Invalid Type ----
+      else {
+        return errorRes(res, 400, "Invalid type");
+      }
+
+      await cart.save();
+
+      // const { totalAmount, detailedItems } = calculateCartTotal(cart);
+
+      return successRes(res, 200, "Item removed successfully");
+    } catch (error) {
+      console.error("Error removing cart item:", error);
+      return errorRes(res, 500, error.message);
+    }
+  },
+
+  getNotifications: async (req, res) => {
+    try {
+      const userId = req.user._id;
+      const notification = await Model.Notification.find({ userId })
+        .populate("other_user")
+        .sort({ createdAt: -1 });
+
+      return successRes(
+        res,
+        200,
+        "Notification fetched successfully",
+        notification
       );
-      if (productIndex === -1)
-        return errorRes(res, 404, "Product not found in basket");
-
-      basket.products.splice(productIndex, 1);
+    } catch (error) {
+      console.error("Error removing cart item:", error);
+      return errorRes(res, 500, error.message);
     }
-
-    // ---- Invalid Type ----
-    else {
-      return errorRes(res, 400, "Invalid type");
-    }
-
-    await cart.save();
-
-    // const { totalAmount, detailedItems } = calculateCartTotal(cart);
-
-    return successRes(res, 200, "Item removed successfully");
-  } catch (error) {
-    console.error("Error removing cart item:", error);
-    return errorRes(res, 500, error.message);
-  }
-},
-
-getNotifications: async (req, res) => {
-  try {
-    const userId = req.user._id;
-    const notification = await Model.Notification.find({ userId })
-      .populate("other_user")
-      .sort({createdAt: -1})
-
-    
-    return successRes(res, 200, "Notification fetched successfully", notification);
-  } catch (error) {
-    console.error("Error removing cart item:", error);
-    return errorRes(res, 500, error.message);
-  }
-}
-
-
+  },
 };
 
 const calculateCartTotal = (cart) => {

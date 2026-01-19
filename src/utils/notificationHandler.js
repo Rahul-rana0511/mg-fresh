@@ -4,8 +4,9 @@ import firebase from "firebase-admin";
 import {orderBooked,
     orderShipped,
     orderOutOfDelivery,
-    orderDelivered,} from "./pushNotification.js";
-import {serviceAccount} from "../../car_bike_firebase.js";
+    orderDelivered,
+  reminder} from "./pushNotification.js";
+import {serviceAccount} from "../../mg_fresh_firebase.js";
 firebase.initializeApp({
   credential: firebase.credential.cert(serviceAccount),
 });
@@ -59,18 +60,21 @@ const pushNotification = async ({
         ({ title, desc, type } = orderBooked(user?.first_name));
         break;
       case "orderShipped":
-        ({ title, desc, type } = orderShipped(user?.name));
+        ({ title, desc, type } = orderShipped(user?.first_name));
         break;
       case "orderDelivered":
-        ({ title, desc, type } = orderDelivered(user?.name));
+        ({ title, desc, type } = orderDelivered(user?.first_name));
         break;
       case "orderOutOfDelivery":
-        ({ title, desc, type } = orderOutOfDelivery(user?.name));
+        ({ title, desc, type } = orderOutOfDelivery(user?.first_name));
+        break;
+         case "reminder":
+        ({ title, desc, type } = reminder(user?.first_name));
         break;
       default:
         break;
     }
-    // if (type != 5) {
+    if (type != 5) {
       await Model.Notification.create({
         user_id,
         other_user,
@@ -80,7 +84,7 @@ const pushNotification = async ({
         notification_type: type,
         redirectId: misc?.redirectId,
       });
-    // }
+    }
 
     // if (sendNotificationTo?.is_enable_notification == 1) {
       const notification = {

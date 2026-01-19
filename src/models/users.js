@@ -47,6 +47,8 @@ const userSchema = new Schema(
       type: String,
       default: null,
     },
+    is_notification_sent:{type: Number, default: 0},
+
 
     device_token: {
       type: String,
