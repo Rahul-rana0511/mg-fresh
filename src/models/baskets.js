@@ -1,4 +1,3 @@
-import { number } from "joi";
 import { Schema, model } from "mongoose";
 const basketSchema = new Schema(
   {
@@ -52,7 +51,7 @@ const basketSchema = new Schema(
         default: null
       },
       price:{
-        type: number,
+        type: Number,
         default: 1
       }
     },
