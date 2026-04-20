@@ -7,7 +7,7 @@ const userServices = {
   addInCart: async (req, res) => {
     try {
       const userId = req.user._id;
-      const { basketId, products, productId, quantity, replacements, note, price } =
+      const { basketId, products, productId, quantity, replacements, note } =
         req.body;
       console.log(req.body, "request");
       let cart = await Model.Cart.findOne({ userId });
@@ -42,13 +42,12 @@ const userServices = {
           products: products || [],
           note,
           quantity,
-          price,
           replacements: basketType === "predefined" ? replacements || [] : [],
         });
       } else {
         // Add individual product
         const existingProduct = cart.individualProducts.find(
-          (p) => p.productId.toString() === productId,
+          (p) => p.productId.toString() === productId
         );
 
         if (existingProduct) {
@@ -94,7 +93,7 @@ const userServices = {
       const updateData = await Model.User.findByIdAndUpdate(
         req.user._id,
         { $set: { active_address: req.body.active_address } },
-        { new: true },
+        { new: true }
       );
 
       return successRes(res, 200, "Address updated successfully", updateData);
@@ -109,7 +108,7 @@ const userServices = {
         res,
         200,
         "Address list fetched successfully",
-        addresses,
+        addresses
       );
     } catch (error) {
       return errorRes(res, 500, error.message);
@@ -126,7 +125,7 @@ const userServices = {
         res,
         200,
         "Address details fetched successfully",
-        address,
+        address
       );
     } catch (error) {
       return errorRes(res, 500, error.message);
@@ -146,7 +145,7 @@ const userServices = {
         req.body,
         {
           new: true,
-        },
+        }
       );
       if (!address) {
         return errorRes(res, 404, "Address not found");
@@ -160,7 +159,7 @@ const userServices = {
   delAddress: async (req, res) => {
     try {
       const address = await Model.Address.findByIdAndDelete(
-        req.params.addressId,
+        req.params.addressId
       );
       if (!address) {
         return errorRes(res, 404, "Address not found");
@@ -185,7 +184,7 @@ const userServices = {
         {
           custom: [],
           goodness: [],
-        },
+        }
       );
       // const cartItems = await Model.Cart.findOne({userId: req.user._id});
       // if(cartItems){
@@ -275,7 +274,7 @@ const userServices = {
           res,
           400,
           "Some items are not available for purchase",
-          unavailableItems,
+          unavailableItems
         );
       }
 
@@ -283,7 +282,7 @@ const userServices = {
       return successRes(
         res,
         200,
-        "All items are available. Proceed to checkout",
+        "All items are available. Proceed to checkout"
       );
     } catch (error) {
       console.error("Buy Now Error:", error);
@@ -321,13 +320,10 @@ const userServices = {
         if (!basket.products?.length) continue;
 
         let basketTotal = 0;
-        if (basket.price && basket.price > 0) {
-          basketTotal += basket.price;
-        } else {
-          for (const item of basket.products) {
-            if (item.productId && item.productId.product_price) {
-              basketTotal += item.productId.product_price * item.quantity;
-            }
+
+        for (const item of basket.products) {
+          if (item.productId && item.productId.product_price) {
+            basketTotal += item.productId.product_price * item.quantity;
           }
         }
 
@@ -424,20 +420,11 @@ const userServices = {
 
         let basketTotal = 0;
         let basketItemsQuantity = 0;
-        if (basket.price && basket.price > 0) {
-          basketTotal += basket.price;
-        } else {
-          for (const item of basket.products) {
-            const price = item.productId?.product_price ?? 0;
-            const qty = item.quantity || 0;
-            basketTotal += price * qty;
-            // basketItemsQuantity += qty;
-          }
-        }
+
         for (const item of basket.products) {
-          // const price = item.productId?.product_price ?? 0;
-          // const qty = item.quantity || 0;
-          // basketTotal += price * qty;
+          const price = item.productId?.product_price ?? 0;
+          const qty = item.quantity || 0;
+          basketTotal += price * qty;
           basketItemsQuantity += qty;
         }
 
@@ -521,7 +508,7 @@ const userServices = {
         res,
         200,
         "Payment verified and order placed successfully",
-        { orderId: order._id },
+        { orderId: order._id }
       );
     } catch (error) {
       console.error("Payment Verification Failed:", error);
@@ -627,7 +614,7 @@ const userServices = {
         return errorRes(
           res,
           400,
-          "Please buy more items to apply this promocode",
+          "Please buy more items to apply this promocode"
         );
       }
       cart.promoId = promoId;
@@ -643,7 +630,7 @@ const userServices = {
       const cart = await Model.Cart.findByIdAndUpdate(
         req.body.cartId,
         { $set: { selectedAddress: req.body.addressId } },
-        { new: true },
+        { new: true }
       );
       if (!cart) {
         return errorRes(res, 404, "cart not found");
@@ -705,7 +692,7 @@ const userServices = {
       const orderDetails = await Model.Order.findByIdAndUpdate(
         req.body.orderId,
         { $set: { status: req.body.status } },
-        { new: true },
+        { new: true }
       );
       if (!orderDetails) {
         return errorRes(res, 404, "Order not found");
@@ -723,7 +710,7 @@ const userServices = {
         res,
         200,
         "Order status updated successfully",
-        orderDetails,
+        orderDetails
       );
     } catch (err) {
       console.error("Failed to get cart items:", err);
@@ -804,7 +791,7 @@ const userServices = {
 
       if (type === "individual") {
         const productIndex = cart.individualProducts.findIndex(
-          (p) => p.productId.toString() === productId,
+          (p) => p.productId.toString() === productId
         );
         if (productIndex === -1)
           return errorRes(res, 404, "Product not found in cart");
@@ -818,7 +805,7 @@ const userServices = {
         }
       } else if (type === "basket") {
         const basketIndex = cart.baskets.findIndex(
-          (b) => b.basketId.toString() === basketId,
+          (b) => b.basketId.toString() === basketId
         );
         if (basketIndex === -1) return errorRes(res, 404, "Basket not found");
 
@@ -830,12 +817,12 @@ const userServices = {
         }
       } else if (type === "basketProduct") {
         const basket = cart.baskets.find(
-          (b) => b.basketId.toString() === basketId,
+          (b) => b.basketId.toString() === basketId
         );
         if (!basket) return errorRes(res, 404, "Basket not found");
 
         const productIndex = basket.products.findIndex(
-          (p) => p.productId.toString() === productId,
+          (p) => p.productId.toString() === productId
         );
         if (productIndex === -1)
           return errorRes(res, 404, "Product not found in basket");
@@ -879,7 +866,7 @@ const userServices = {
       // ---- Case 1: Remove an individual product ----
       if (type === "individual") {
         const productIndex = cart.individualProducts.findIndex(
-          (p) => p.productId?._id.toString() === productId,
+          (p) => p.productId?._id.toString() === productId
         );
 
         if (productIndex === -1)
@@ -891,7 +878,7 @@ const userServices = {
       // ---- Case 2: Remove a full basket ----
       else if (type === "basket") {
         const basketIndex = cart.baskets.findIndex(
-          (b) => b.basketId?._id?.toString() === basketId,
+          (b) => b.basketId?._id?.toString() === basketId
         );
 
         if (basketIndex === -1) return errorRes(res, 404, "Basket not found");
@@ -902,7 +889,7 @@ const userServices = {
       // ---- Case 3: Remove a product inside a basket ----
       else if (type === "basketProduct") {
         const basket = cart.baskets.find(
-          (b) => b.basketId?._id?.toString() === basketId,
+          (b) => b.basketId?._id?.toString() === basketId
         );
         if (!basket) return errorRes(res, 404, "Basket not found");
 
@@ -911,12 +898,12 @@ const userServices = {
           return errorRes(
             res,
             403,
-            "You cannot remove products from a predefined basket",
+            "You cannot remove products from a predefined basket"
           );
         }
 
         const productIndex = basket.products.findIndex(
-          (p) => p.productId?._id.toString() === productId,
+          (p) => p.productId?._id.toString() === productId
         );
         if (productIndex === -1)
           return errorRes(res, 404, "Product not found in basket");
@@ -951,7 +938,7 @@ const userServices = {
         res,
         200,
         "Notification fetched successfully",
-        notification,
+        notification
       );
     } catch (error) {
       console.error("Error removing cart item:", error);
@@ -990,19 +977,10 @@ const calculateCartTotal = (cart) => {
       const basketItems = [];
 
       if (basket.products && basket.products.length > 0) {
-        if(basket.price && basket.price > 0){
-          basketTotal += basket.price;
-         }else{
-           for (const item of basket.products) {
-          if (item.productId && item.productId.product_price) {
-            basketTotal += item.productId.product_price * item.quantity;
-          }
-        }
-         }
         for (const item of basket.products) {
           if (item.productId && item.productId.product_price) {
-            // const itemTotal = item.productId.product_price * item.quantity;
-            // basketTotal += itemTotal;
+            const itemTotal = item.productId.product_price * item.quantity;
+            basketTotal += itemTotal;
 
             basketItems.push({
               productId: item.productId._id,

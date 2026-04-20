@@ -1,3 +1,4 @@
+import { number } from "joi";
 import { Schema, model } from "mongoose";
 const basketSchema = new Schema(
   {
@@ -30,7 +31,34 @@ const basketSchema = new Schema(
       },
     ],
     default: []
-  }
+  },
+  basket_price:{
+    type: Number,
+    default: 1
+  },
+  products_added: {
+  type: [
+    {
+      product: {
+        type: Schema.Types.ObjectId,
+        ref: "Product",
+      },
+      quantity: {
+        type: Number,
+        default: 1,
+      },
+      units:{
+        type: String,
+        default: null
+      },
+      price:{
+        type: number,
+        default: 1
+      }
+    },
+  ],
+  default: [],
+},
   },
 
   { timestamps: true }

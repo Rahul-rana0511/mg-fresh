@@ -456,135 +456,157 @@ export const validations = {
     next();
   },
 
-
   validateUpdateBaskets: (req, res, next) => {
-  const schema = Joi.object({
-    basketId: Joi.string().required(),
-    basket_name: Joi.string().optional(),
-    basket_type: Joi.string().optional(),
-    basket_image: Joi.string().optional(),
+    const schema = Joi.object({
+      basketId: Joi.string().required(),
+      basket_name: Joi.string().optional(),
+      basket_type: Joi.string().optional(),
+      basket_image: Joi.string().optional(),
       box_type: Joi.number().optional(),
-    mandatory_products: Joi.number().optional(),
-    products: Joi.array().items(Joi.string()).optional()
-  });
+      mandatory_products: Joi.number().optional(),
+      products: Joi.array().items(Joi.string()).optional(),
+      products_added: Joi.array()
+        .items(
+          Joi.object({
+            product: Joi.string().hex().length(24).required(),
+            quantity: Joi.number().min(1).optional(),
+            units: Joi.string().optional().allow(null, ""),
+            price: Joi.number().min(0).optional(),
+          }),
+        )
+        .optional(),
 
-  const { error } = schema.validate(req.body);
-  if (error) {
-    return handleValidationError(res, error);
-  }
+      basket_price: Joi.number().min(0).optional(),
+    });
 
-  next();
-},
+    const { error } = schema.validate(req.body);
+    if (error) {
+      return handleValidationError(res, error);
+    }
 
-validateAddBaskets: (req, res, next) => {
-  const schema = Joi.object({
-    basket_name: Joi.string().optional(),
-    basket_type: Joi.string().optional(),
-    box_type: Joi.number().optional(),
-    mandatory_products: Joi.number().optional(),
-    basket_image: Joi.string().optional(),
-    products: Joi.array().items(Joi.string()).optional()
-  });
+    next();
+  },
 
-  const { error } = schema.validate(req.body, { abortEarly: false });
-  if (error) {
-    return handleValidationError(res, error);
-  }
+  validateAddBaskets: (req, res, next) => {
+    const schema = Joi.object({
+      basket_name: Joi.string().optional(),
+      basket_type: Joi.string().optional(),
+      box_type: Joi.number().optional(),
+      mandatory_products: Joi.number().optional(),
+      basket_image: Joi.string().optional(),
+      products: Joi.array().items(Joi.string()).optional(),
+      products_added: Joi.array()
+        .items(
+          Joi.object({
+            product: Joi.string().hex().length(24).required(),
+            quantity: Joi.number().min(1).optional(),
+            units: Joi.string().optional().allow(null, ""),
+            price: Joi.number().min(0).optional(),
+          }),
+        )
+        .optional(),
 
-  next();
-},
+      basket_price: Joi.number().min(0).optional(),
+    });
 
-validateUpdateProduct: (req, res, next) => {
-  const schema = Joi.object({
-    productId: Joi.string().required(),
-    product_name: Joi.string().optional(),
-    product_type: Joi.string().optional(),
-    product_image: Joi.string().optional(),
-    product_desc: Joi.string().optional(),
-    discount: Joi.number().optional(),
-    product_price: Joi.number().optional(),
-    total_stock: Joi.number().optional(),
-    product_quantity: Joi.number().optional()
-  });
+    const { error } = schema.validate(req.body, { abortEarly: false });
+    if (error) {
+      return handleValidationError(res, error);
+    }
 
-  const { error } = schema.validate(req.body);
-  if (error) {
-    return handleValidationError(res, error);
-  }
+    next();
+  },
 
-  next();
-},
+  validateUpdateProduct: (req, res, next) => {
+    const schema = Joi.object({
+      productId: Joi.string().required(),
+      product_name: Joi.string().optional(),
+      product_type: Joi.string().optional(),
+      product_image: Joi.string().optional(),
+      product_desc: Joi.string().optional(),
+      discount: Joi.number().optional(),
+      product_price: Joi.number().optional(),
+      total_stock: Joi.number().optional(),
+      product_quantity: Joi.number().optional(),
+    });
 
-validateAddProduct: (req, res, next) => {
-  const schema = Joi.object({
-    product_name: Joi.string().optional(),
-    product_type: Joi.string().optional(),
-    product_image: Joi.string().optional(),
-    product_desc: Joi.string().optional(),
-    discount: Joi.number().optional(),
-    product_price: Joi.number().optional(),
-    total_stock: Joi.number().optional(),
-    product_quantity: Joi.number().optional()
-  });
+    const { error } = schema.validate(req.body);
+    if (error) {
+      return handleValidationError(res, error);
+    }
 
-  const { error } = schema.validate(req.body);
-  if (error) {
-    return handleValidationError(res, error);
-  }
+    next();
+  },
 
-  next();
-},
- validateCreateProfile : (req, res, next) => {
-  const schema = Joi.object({
-    profile_image: Joi.string().optional(),
-    first_name: Joi.string().required(),
-    last_name: Joi.string().required(),
-    gender: Joi.number().valid(0, 1, 2).optional() 
-  });
+  validateAddProduct: (req, res, next) => {
+    const schema = Joi.object({
+      product_name: Joi.string().optional(),
+      product_type: Joi.string().optional(),
+      product_image: Joi.string().optional(),
+      product_desc: Joi.string().optional(),
+      discount: Joi.number().optional(),
+      product_price: Joi.number().optional(),
+      total_stock: Joi.number().optional(),
+      product_quantity: Joi.number().optional(),
+    });
 
-  const { error } = schema.validate(req.body);
-  if (error) {
-    return handleValidationError(res, error);
-  }
+    const { error } = schema.validate(req.body);
+    if (error) {
+      return handleValidationError(res, error);
+    }
 
-  next();
-},
-validateCreateAddress : (req, res, next) => {
-  const schema = Joi.object({
-   delivery_details: Joi.string().allow(null, "").optional(),
-    address_details: Joi.string().allow(null, "").optional(),
-    name: Joi.string().optional(),
-    country_code: Joi.string().optional(),
-    phone_number: Joi.number().optional(),
-    address_type: Joi.number().valid(0, 1, 2).optional(),
-    lat: Joi.number().optional(),
-    long: Joi.number().optional(),
-  });
+    next();
+  },
+  validateCreateProfile: (req, res, next) => {
+    const schema = Joi.object({
+      profile_image: Joi.string().optional(),
+      first_name: Joi.string().required(),
+      last_name: Joi.string().required(),
+      gender: Joi.number().valid(0, 1, 2).optional(),
+    });
 
-  const { error } = schema.validate(req.body);
-  if (error) {
-    return handleValidationError(res, error);
-  }
-  next();
-},
+    const { error } = schema.validate(req.body);
+    if (error) {
+      return handleValidationError(res, error);
+    }
 
-validateUpdateAddress : (req, res, next) => {
-  const schema = Joi.object({
-    delivery_details: Joi.string().allow(null, "").optional(),
-    address_details: Joi.string().allow(null, "").optional(),
-    name: Joi.string().optional(),
-    country_code: Joi.string().optional(),
-    phone_number: Joi.number().optional(),
-    address_type: Joi.number().valid(0, 1, 2).optional(),
-    lat: Joi.number().optional(),
-    long: Joi.number().optional(),
-  });
+    next();
+  },
+  validateCreateAddress: (req, res, next) => {
+    const schema = Joi.object({
+      delivery_details: Joi.string().allow(null, "").optional(),
+      address_details: Joi.string().allow(null, "").optional(),
+      name: Joi.string().optional(),
+      country_code: Joi.string().optional(),
+      phone_number: Joi.number().optional(),
+      address_type: Joi.number().valid(0, 1, 2).optional(),
+      lat: Joi.number().optional(),
+      long: Joi.number().optional(),
+    });
 
-  const { error } = schema.validate(req.body);
-  if (error) {
-   return handleValidationError(res, error);
-  }
-  next();
-}
+    const { error } = schema.validate(req.body);
+    if (error) {
+      return handleValidationError(res, error);
+    }
+    next();
+  },
 
+  validateUpdateAddress: (req, res, next) => {
+    const schema = Joi.object({
+      delivery_details: Joi.string().allow(null, "").optional(),
+      address_details: Joi.string().allow(null, "").optional(),
+      name: Joi.string().optional(),
+      country_code: Joi.string().optional(),
+      phone_number: Joi.number().optional(),
+      address_type: Joi.number().valid(0, 1, 2).optional(),
+      lat: Joi.number().optional(),
+      long: Joi.number().optional(),
+    });
+
+    const { error } = schema.validate(req.body);
+    if (error) {
+      return handleValidationError(res, error);
+    }
+    next();
+  },
 };
