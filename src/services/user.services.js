@@ -298,6 +298,7 @@ const userServices = {
       });
       const cart = await Model.Cart.findOne({ userId })
         .populate("baskets.products.productId")
+        .populate("baskets.basketId")
         .populate("individualProducts.productId")
         .populate("promoId");
 
@@ -320,7 +321,10 @@ const userServices = {
         if (!basket.products?.length) continue;
 
         let basketTotal = 0;
-
+         if(basket?.basketId?.basket_price && basket?.basketId?.basket_price > 1 ){
+          basketTotal += basket.basketId.basket_price
+          continue;
+         }
         for (const item of basket.products) {
           if (item.productId && item.productId.product_price) {
             basketTotal += item.productId.product_price * item.quantity;
@@ -385,6 +389,7 @@ const userServices = {
       const cart = await Model.Cart.findOne({ userId })
         .populate("individualProducts.productId")
         .populate("baskets.products.productId")
+        .populate("baskets.basketId")
         .populate("promoId");
 
       if (!cart || (!cart.individualProducts.length && !cart.baskets.length)) {
@@ -420,7 +425,10 @@ const userServices = {
 
         let basketTotal = 0;
         let basketItemsQuantity = 0;
-
+     if(basket?.basketId?.basket_price && basket?.basketId?.basket_price > 1 ){
+          basketTotal += basket.basketId.basket_price
+          continue;
+         }
         for (const item of basket.products) {
           const price = item.productId?.product_price ?? 0;
           const qty = item.quantity || 0;
@@ -489,6 +497,9 @@ const userServices = {
 
       for (const basket of cart.baskets) {
         const multiplier = basket.quantity || 1;
+             if(basket?.basketId?.basket_price && basket?.basketId?.basket_price > 1 ){
+          continue;
+         }
         for (const item of basket.products) {
           const qty = (item.quantity || 0) * multiplier;
           if (qty > 0) {
