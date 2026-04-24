@@ -112,7 +112,7 @@ const adminServices = {
       if(noOfBasket.length > 4){
         return errorRes(res, 400, "Only 4 basket is allowed")
       }
-      const isBasketAlreadyExists = await Model.Basket.find({box_type: req.body.box_type, basket_type: req.body.basket_type});
+      const isBasketAlreadyExists = await Model.Basket.findOne({box_type: req.body.box_type, basket_type: req.body.basket_type});
       if(isBasketAlreadyExists){
         return errorRes(res, 400, "This basket already exists")
       }
