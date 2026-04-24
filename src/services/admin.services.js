@@ -154,7 +154,7 @@ const adminServices = {
   getBasketDetails: async (req, res) => {
     try {
       const { basketId } = req.params;
-      const basketDetails = await Model.Basket.findById(basketId).populate("products");
+      const basketDetails = await Model.Basket.findById(basketId).populate({path:"products_added.product", select:"product_name product_image"});
       if (!basketDetails) {
         return errorRes(res, 404, "Basket details not found");
       }

@@ -5,6 +5,10 @@ const basketSchema = new Schema(
       type: String,
       default: null
     },
+     basket_desc: {
+      type: String,
+      default: null
+    },
     basket_type: {
         type: String,
         default: null

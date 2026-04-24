@@ -461,6 +461,7 @@ export const validations = {
       basketId: Joi.string().required(),
       basket_name: Joi.string().optional(),
       basket_type: Joi.string().optional(),
+      basket_desc: Joi.string().optional(),
       basket_image: Joi.string().optional(),
       box_type: Joi.number().optional(),
       mandatory_products: Joi.number().optional(),
@@ -491,6 +492,7 @@ export const validations = {
     const schema = Joi.object({
       basket_name: Joi.string().optional(),
       basket_type: Joi.string().optional(),
+      basket_desc: Joi.string().optional(),
       box_type: Joi.number().optional(),
       mandatory_products: Joi.number().optional(),
       basket_image: Joi.string().optional(),
