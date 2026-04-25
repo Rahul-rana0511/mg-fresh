@@ -999,8 +999,8 @@ const calculateCartTotal = (cart) => {
     for (const basket of cart.baskets) {
       let basketTotal = 0;
       const basketItems = [];
-      if(basket.basketId.product_price > 1){
-        basketTotal += basket.basketId.product_price
+      if(basket.basketId.basket_price > 1){
+        basketTotal += basket.basketId.basket_price
       }
       else if (basket.products && basket.products.length > 0) {
         for (const item of basket.products) {
