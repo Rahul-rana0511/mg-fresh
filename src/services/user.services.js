@@ -36,7 +36,7 @@ const userServices = {
           });
         }
 let finalProducts = [];
-
+console.log("before saving data")
 if (products?.length) {
   finalProducts = products;
 } else if (products_added?.length) {
@@ -72,7 +72,7 @@ console.log(finalProducts,"final")
           });
         }
       }
-
+     console.log("we are here")
       await cart.save();
       return successRes(res, 200, "Cart added successfully", cart);
     } catch (error) {
@@ -998,8 +998,10 @@ const calculateCartTotal = (cart) => {
     for (const basket of cart.baskets) {
       let basketTotal = 0;
       const basketItems = [];
-
-      if (basket.products && basket.products.length > 0) {
+      if(basket.basketId.product_price > 1){
+        basketTotal += basket.basketId.product_price
+      }
+      else if (basket.products && basket.products.length > 0) {
         for (const item of basket.products) {
           if (item.productId && item.productId.product_price) {
             const itemTotal = item.productId.product_price * item.quantity;
