@@ -35,15 +35,22 @@ const userServices = {
               "You can only replace up to 3 products in a predefined basket.",
           });
         }
+let finalProducts = [];
 
+if (products?.length) {
+  finalProducts = products;
+} else if (products_added?.length) {
+  finalProducts = products_added;
+}
         cart.baskets.push({
           basketId,
           type: basketType,
-          products: products ? products : products_added ? products_added : [],
+          products: finalProducts,
           note,
           quantity,
           replacements: basketType === "predefined" ? replacements || [] : [],
         });
+       
       } else {
         // Add individual product
         const existingProduct = cart.individualProducts.find(
