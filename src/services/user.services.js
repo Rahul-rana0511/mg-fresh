@@ -484,14 +484,16 @@ for (const item of basket.products) {
         let basketItemsQuantity = 0;
      if(basket?.basketId?.basket_price && basket?.basketId?.basket_price > 1 ){
           basketTotal += basket.basketId.basket_price
-          continue;
-         }
-        for (const item of basket.products) {
+          // continue;
+         }else{
+             for (const item of basket.products) {
           const price = item.productId?.product_price ?? 0;
           const qty = item.quantity || 0;
           basketTotal += price * qty;
           basketItemsQuantity += qty;
         }
+         }
+     
 
         const multiplier = basket.quantity || 1;
         totalAmount += basketTotal * multiplier;
