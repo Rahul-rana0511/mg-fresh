@@ -7,7 +7,7 @@ const userServices = {
   addInCart: async (req, res) => {
     try {
       const userId = req.user._id;
-      const { basketId, products, productId, quantity, replacements, note } =
+      const { basketId, products, productId, quantity, replacements, note,products_added } =
         req.body;
       console.log(req.body, "request");
       let cart = await Model.Cart.findOne({ userId });
@@ -39,7 +39,7 @@ const userServices = {
         cart.baskets.push({
           basketId,
           type: basketType,
-          products: products || [],
+          products: products ? products : products_added ? products_added : [],
           note,
           quantity,
           replacements: basketType === "predefined" ? replacements || [] : [],
