@@ -1017,7 +1017,7 @@ const calculateCartTotal = (cart) => {
           }
         }
       }
-
+console.log(basketTotal, "basketTotal")
       // 👇 Multiply basket total by basket.quantity
       const basketQuantity = basket.quantity || 1;
       const basketFinalTotal = basketTotal * basketQuantity;
