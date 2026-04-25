@@ -971,6 +971,7 @@ console.log(finalProducts,"final")
 };
 
 const calculateCartTotal = (cart) => {
+  console.log(cart,"cat ")
   let totalAmount = 0;
   const detailedItems = [];
 
