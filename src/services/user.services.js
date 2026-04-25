@@ -391,7 +391,7 @@ if (products?.length) {
       // 💸 Apply promocode discount (if exists)
       let promoDiscount = 0;
       let finalAmount = totalAmount;
-
+      console.log(totalAmount, "befor")
       if (cart.promoId) {
         const promo = cart.promoId;
         promoDiscount = (totalAmount * promo.value) / 100;
@@ -406,6 +406,7 @@ if (products?.length) {
         currency: "INR",
         receipt: `rcpt_${Date.now()}`,
       });
+      console.log(totalAmount, "total amount")
       let data = {
         razorpayOrderId: razorpayOrder.id,
         amount: totalAmount,
