@@ -1001,6 +1001,22 @@ const calculateCartTotal = (cart) => {
       const basketItems = [];
       if(basket.basketId.basket_price > 1){
         basketTotal += basket.basketId.basket_price
+        if (item.productId && item.productId.product_price) {
+          
+
+          for (const item of basket.products) {
+          if (item.productId && item.productId.product_price) {
+          
+            basketItems.push({
+              productId: item.productId._id,
+              name: item.productId.product_name,
+              quantity: item.quantity,
+              price: item.productId.product_price,
+              total: itemTotal,
+            });
+          }
+        }
+          }
       }
       else if (basket.products && basket.products.length > 0) {
         for (const item of basket.products) {
