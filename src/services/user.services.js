@@ -40,8 +40,13 @@ let finalProducts = [];
 if (products?.length) {
   finalProducts = products;
 } else if (products_added?.length) {
-  finalProducts = products_added;
+ finalProducts = products_added.map((item) => ({
+    productId: item.productId,
+    quantity: item.quantity || 1,
+    units: item.units || 1,
+  }));
 }
+console.log(finalProducts,"final")
         cart.baskets.push({
           basketId,
           type: basketType,
