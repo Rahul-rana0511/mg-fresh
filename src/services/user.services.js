@@ -46,15 +46,57 @@ if (products?.length) {
     units: item.units || 1,
   }));
 }
-console.log(finalProducts,"final")
-        cart.baskets.push({
-          basketId,
-          type: basketType,
-          products: finalProducts,
-          note,
-          quantity,
-          replacements: basketType === "predefined" ? replacements || [] : [],
-        });
+     
+        // cart.baskets.push({
+        //   basketId,
+        //   type: basketType,
+        //   products: finalProducts,
+        //   note,
+        //   quantity,
+        //   replacements: basketType === "predefined" ? replacements || [] : [],
+        // });
+
+        if (basketType === "predefined") {
+  // 🔍 check if basket already exists
+  const existingBasket = cart.baskets.find(
+    (b) =>
+      b.basketId.toString() === basketId &&
+      b.type === "predefined"
+  );
+
+  if (existingBasket) {
+    // ✅ just increase quantity
+    existingBasket.quantity += quantity || 1;
+
+    // optional: update note if needed
+    if (note) existingBasket.note = note;
+
+    // optional: update replacements
+    if (replacements?.length) {
+      existingBasket.replacements = replacements;
+    }
+  } else {
+    // ➕ add new basket
+    cart.baskets.push({
+      basketId,
+      type: basketType,
+      products: finalProducts,
+      note,
+      quantity: quantity || 1,
+      replacements: replacements || [],
+    });
+  }
+} else {
+  // 🧺 custom basket → always push
+  cart.baskets.push({
+    basketId,
+    type: basketType,
+    products: finalProducts,
+    note,
+    quantity: quantity || 1,
+    replacements: [],
+  });
+}
        
       } else {
         // Add individual product
