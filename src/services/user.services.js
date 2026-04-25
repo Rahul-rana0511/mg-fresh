@@ -377,13 +377,15 @@ if (products?.length) {
         let basketTotal = 0;
          if(basket?.basketId?.basket_price && basket?.basketId?.basket_price > 1 ){
           basketTotal += basket.basketId.basket_price
-          continue;
-         }
-        for (const item of basket.products) {
+          // continue;
+         }else{
+for (const item of basket.products) {
           if (item.productId && item.productId.product_price) {
             basketTotal += item.productId.product_price * item.quantity;
           }
         }
+         }
+        
 
         // 👇 multiply by basket.quantity
         totalAmount += basketTotal * (basket.quantity || 1);
