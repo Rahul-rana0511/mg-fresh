@@ -41,7 +41,7 @@ const cartSchema = new Schema(
               default: 1,
               min: 1,
             },
-            unit:{
+            units:{
               type: String,
               default: null
             },
