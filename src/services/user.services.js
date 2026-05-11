@@ -332,6 +332,30 @@ if (products?.length) {
         );
       }
 
+      // Calculate cart total for minimum order validation
+      let totalAmount = 0;
+      for (const item of cart.individualProducts) {
+        totalAmount += (item.productId?.product_price || 0) * item.quantity;
+      }
+
+      for (const basket of cart.baskets) {
+        if (!basket.products?.length) continue;
+
+        let basketTotal = 0;
+        if (basket?.basketId?.basket_price && basket.basketId.basket_price > 1) {
+          basketTotal += basket.basketId.basket_price;
+        } else {
+          for (const item of basket.products) {
+            basketTotal += (item.productId?.product_price || 0) * item.quantity;
+          }
+        }
+        totalAmount += basketTotal * (basket.quantity || 1);
+      }
+
+      if (totalAmount < 700) {
+        return errorRes(res, 400, "Please add items worth ₹700 or more to proceed with checkout.");
+      }
+
       // All products are available
       return successRes(
         res,
