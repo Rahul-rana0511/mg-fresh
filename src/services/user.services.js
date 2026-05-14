@@ -269,6 +269,7 @@ if (products?.length) {
       const userId = req.user.id;
 
       const cart = await Model.Cart.findOne({ userId })
+        .populate("baskets.basketId")
         .populate("baskets.products.productId")
         .populate("baskets.replacements.originalProductId")
         .populate("baskets.replacements.newProductId")
@@ -352,7 +353,8 @@ if (products?.length) {
         totalAmount += basketTotal * (basket.quantity || 1);
       }
 
-      if (totalAmount < 700) {
+      const hasGoodnessBox = cart.baskets.some((b) => b.basketId?.box_type === 1);
+      if (!hasGoodnessBox && totalAmount < 700) {
         return errorRes(res, 400, "Please add items worth ₹700 or more to proceed with checkout.");
       }
 
