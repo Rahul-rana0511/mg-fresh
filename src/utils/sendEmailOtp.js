@@ -16,19 +16,17 @@ const sendEmailOtp = async (email, otp) => {
 </head>
 <body style="margin:0;padding:0;background-color:#f4f6f9;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
 
-  <!-- Wrapper -->
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f6f9;padding:40px 0;">
     <tr>
       <td align="center">
 
-        <!-- Card -->
         <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);">
 
           <!-- Header -->
           <tr>
-            <td style="background:linear-gradient(135deg,#1a7a4a,#25a868);padding:36px 40px;text-align:center;">
-              <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:700;letter-spacing:0.5px;">🌿 MG Fresh</h1>
-              <p style="margin:6px 0 0;color:rgba(255,255,255,0.85);font-size:13px;letter-spacing:1px;text-transform:uppercase;">Email Verification</p>
+            <td bgcolor="#1a7a4a" style="padding:36px 40px;text-align:center;">
+              <h1 style="margin:0;color:#ffffff;font-size:28px;font-weight:800;letter-spacing:1px;">MG Fresh</h1>
+              <p style="margin:8px 0 0;color:#a7f3d0;font-size:12px;letter-spacing:2px;text-transform:uppercase;">Email Verification</p>
             </td>
           </tr>
 
@@ -55,7 +53,7 @@ const sendEmailOtp = async (email, otp) => {
                 <tr>
                   <td style="background:#fff8f0;border-left:4px solid #f59e0b;border-radius:0 6px 6px 0;padding:14px 16px;">
                     <p style="margin:0;font-size:13px;color:#92400e;">
-                      ⚠️ <strong>Never share this code</strong> with anyone. MG Fresh will never ask for your OTP.
+                      &#9888; <strong>Never share this code</strong> with anyone. MG Fresh will never ask for your OTP.
                     </p>
                   </td>
                 </tr>
@@ -83,7 +81,6 @@ const sendEmailOtp = async (email, otp) => {
           </tr>
 
         </table>
-        <!-- End Card -->
 
       </td>
     </tr>
