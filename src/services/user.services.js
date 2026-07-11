@@ -457,21 +457,21 @@ for (const item of basket.products) {
         shippingAddress,
         paymentMethod,
       } = req.body;
-const payment = await Razorpay.payments.fetch(razorpay_payment_id);
+// const payment = await Razorpay.payments.fetch(razorpay_payment_id);
 
-if (payment.status !== "captured") {
-    return errorRes(res, 400, "Payment not captured");
-}
-console.log(payment, "paymentData")
-      // 1. Verify signature
-      const generatedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-      .digest('hex');
+// if (payment.status !== "captured") {
+//     return errorRes(res, 400, "Payment not captured");
+// }
+// console.log(payment, "paymentData")
+//       // 1. Verify signature
+//       const generatedSignature = crypto
+//       .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+//       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+//       .digest('hex');
 
-      if (generatedSignature !== razorpay_signature) {
-        return res.status(400).json({ message: "Invalid payment signature" });
-      }
+//       if (generatedSignature !== razorpay_signature) {
+//         return res.status(400).json({ message: "Invalid payment signature" });
+//       }
 
       // 2. Get user's cart
       const cart = await Model.Cart.findOne({ userId })
