@@ -457,7 +457,7 @@ for (const item of basket.products) {
         shippingAddress,
         paymentMethod,
       } = req.body;
-const payment = await razorpay.payments.fetch(razorpay_payment_id);
+const payment = await Razorpay.payments.fetch(razorpay_payment_id);
 
 if (payment.status !== "captured") {
     return errorRes(res, 400, "Payment not captured");
