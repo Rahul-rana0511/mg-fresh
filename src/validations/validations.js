@@ -530,6 +530,7 @@ export const validations = {
       product_price: Joi.number().optional(),
       total_stock: Joi.number().optional(),
       product_quantity: Joi.number().optional(),
+ is_product_out_of_stock: Joi.boolean().optional(),
     });
 
     const { error } = schema.validate(req.body);
@@ -550,6 +551,7 @@ export const validations = {
       product_price: Joi.number().optional(),
       total_stock: Joi.number().optional(),
       product_quantity: Joi.number().optional(),
+      is_product_out_of_stock: Joi.boolean().optional(),
     });
 
     const { error } = schema.validate(req.body);

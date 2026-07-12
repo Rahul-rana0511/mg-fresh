@@ -49,7 +49,12 @@ const adminServices = {
   },
   getProducts: async (req, res) => {
     try {
-      const allProducts = await Model.Product.find({}).sort({
+      const productFilter = {};
+      // if user is not admin (role !== 2) then hide out-of-stock products
+        if (!(req.user && req.user.role === 2)) {
+        productFilter.is_product_out_of_stock = { $ne: true };
+      }
+      const allProducts = await Model.Product.find(productFilter).sort({
         createdAt: -1,
       });
       return successRes(

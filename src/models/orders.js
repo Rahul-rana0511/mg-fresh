@@ -114,6 +114,12 @@ const orderSchema = new Schema(
       ref: "Address",
       default: null
     },
+    orderId: {
+      type: String,
+      unique: true,
+      index: true,
+      required: false,
+    },
   },
   { timestamps: true }
 );

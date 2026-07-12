@@ -1,8 +1,11 @@
 import * as Model from "../models/index.js";
 import { errorRes, successRes } from "../utils/response.js";
 import "dotenv/config";
+import sendOrderEmail from "../utils/sendOrderEmail.js";
+import sendAdminOrderEmail from "../utils/sendAdminOrderEmail.js";
 // import Razorpay from "razorpay";
 import razorpay from "../config/razorpay.js";
+import pushNotification from "../utils/notificationHandler.js";
 import crypto from "crypto";
 const userServices = {
   addInCart: async (req, res) => {
@@ -245,14 +248,18 @@ if (products?.length) {
       // if(cartItems){
 
       // }
-      const allProducts = await Model.Product.find({
-        product_type: { $nin: ["Milk", "Flour"] },
-      })
+      const productFilter = { product_type: { $nin: ["Milk", "Flour"] } };
+      if (!(req.user && req.user.role === 2)) {
+        productFilter.is_product_out_of_stock = { $ne: true };
+      }
+      const allProducts = await Model.Product.find(productFilter)
         .sort({ createdAt: -1 })
         .limit(10);
-      const dairyProduts = await Model.Product.find({
-        product_type: { $in: ["Milk", "Flour"] },
-      })
+      const dairyFilter = { product_type: { $in: ["Milk", "Flour"] } };
+      if (!(req.user && req.user.role === 2)) {
+        dairyFilter.is_product_out_of_stock = { $ne: true };
+      }
+      const dairyProduts = await Model.Product.find(dairyFilter)
         .sort({ createdAt: -1 })
         .limit(10);
       return successRes(res, 200, "Home screen data fetched successfully", {
@@ -482,6 +489,7 @@ console.log(payment, "paymentData")
         .populate("individualProducts.productId")
         .populate("baskets.products.productId")
         .populate("baskets.basketId")
+        .populate("selectedAddress")
         .populate("promoId");
 
       if (!cart || (!cart.individualProducts.length && !cart.baskets.length)) {
@@ -552,17 +560,36 @@ console.log(payment, "paymentData")
       }
 
       // 4. Create order in DB
+      // Generate a human-friendly orderId: MGYYYYMMDDxxxxx
+      const generateOrderId = async () => {
+        const now = new Date();
+        const yyyy = now.getFullYear().toString();
+        const mm = String(now.getMonth() + 1).padStart(2, "0");
+        const dd = String(now.getDate()).padStart(2, "0");
+        for (let attempt = 0; attempt < 5; attempt++) {
+          const rand = Math.floor(10000 + Math.random() * 90000); // 5 digits
+          const id = `MG${yyyy}${mm}${dd}${rand}`;
+          const exists = await Model.Order.findOne({ orderId: id }).lean();
+          if (!exists) return id;
+        }
+        // fallback
+        return `MG${Date.now()}`;
+      };
+
+      const orderId = await generateOrderId();
+
       const order = await Model.Order.create({
         userId,
         baskets: cart.baskets,
         individualProducts: cart.individualProducts,
-      amount: totalAmount,
+        amount: totalAmount,
         discount: promoDiscount,
-  totalAmount: payment.amount / 100,
+        totalAmount: payment.amount / 100,
         totalQuantity,
         paymentStatus: "paid",
         paymentMethod: paymentMethod || "card",
         shippingAddress: cart?.selectedAddress,
+        orderId,
       });
 
       // 5. Decrement product stock
@@ -576,7 +603,7 @@ console.log(payment, "paymentData")
         const qty = item.quantity || 0;
         if (qty > 0) {
           await Model.Product.findByIdAndUpdate(item.productId, {
-            $inc: { stock: -qty },
+            $inc: { stock: -qty, total_stock: -qty },
           });
         }
       }
@@ -598,12 +625,21 @@ console.log(payment, "paymentData")
           const qty = (item.quantity || 0) * multiplier;
           if (qty > 0) {
             await Model.Product.findByIdAndUpdate(item.productId, {
-              $inc: { stock: -qty },
+              $inc: { stock: -qty, total_stock: -qty },
             });
           }
         }
       }
-      // 6. Clear cart
+      // 6. Send order email to admin
+      try {
+           sendOrderEmail({ order, cart, user: req.user, adminEmail: req.user.email });
+        // send admin-specific email
+         sendAdminOrderEmail({ order, cart, user: req.user, adminEmail: process.env.EMAIL_USER });
+      } catch (e) {
+        console.error("Failed to send admin order email:", e);
+      }
+
+      // 7. Clear cart
       cart.individualProducts = [];
       cart.baskets = [];
       await cart.save();
@@ -613,7 +649,7 @@ console.log(payment, "paymentData")
         res,
         200,
         "Payment verified and order placed successfully",
-        { orderId: order._id }
+        { orderId: order.orderId || order._id }
       );
     } catch (error) {
       console.error("Payment Verification Failed:", error);
