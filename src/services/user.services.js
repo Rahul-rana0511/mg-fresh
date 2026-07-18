@@ -250,14 +250,14 @@ if (products?.length) {
       // }
       const productFilter = { product_type: { $nin: ["Milk", "Flour"] } };
       if (!(req.user && req.user.role === 2)) {
-        productFilter.is_product_out_of_stock = { $ne: true };
+        // productFilter.is_product_out_of_stock = { $ne: true };
       }
       const allProducts = await Model.Product.find(productFilter)
         .sort({ createdAt: -1 })
         .limit(10);
       const dairyFilter = { product_type: { $in: ["Milk", "Flour"] } };
       if (!(req.user && req.user.role === 2)) {
-        dairyFilter.is_product_out_of_stock = { $ne: true };
+        // dairyFilter.is_product_out_of_stock = { $ne: true };
       }
       const dairyProduts = await Model.Product.find(dairyFilter)
         .sort({ createdAt: -1 })
